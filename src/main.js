@@ -642,7 +642,7 @@ function updateServiceOptions() {
         serviceSelect.innerHTML = `<option value="">${translations[currentLang].service_selection}</option>` + 
             filteredServices.map((s) => {
                 const trName = translations[currentLang][s.name] || s.name;
-                const priceText = currentLang === 'en' ? `${s.price} EGP (Assistant: ${s.assistant_fees} EGP)` : `${s.price} ج.م (المساعد: ${s.assistant_fees} ج.م)`;
+                const priceText = currentLang === 'en' ? `${s.price} EGP` : `${s.price} ج.م`;
                 return `<option value="${String(s._id)}">${trName} - ${priceText}</option>`;
             }).join('');
         serviceSelect.disabled = false;
