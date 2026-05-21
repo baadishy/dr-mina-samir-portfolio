@@ -16,7 +16,8 @@ const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/dr_mina
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '.'))); // serve static files from root
+app.use(express.static(path.join(__dirname, 'public'))); // serve static files from public if it exists
+app.use(express.static(path.join(__dirname, '.'))); // fallback serve static files from root
 
 let clientConnection: MongoClient | null = null;
 let db: any = null;

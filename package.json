@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node server.ts",
     "dev": "node server.ts",
-    "build": "echo 'No build step required'",
+    "build": "mkdir -p public && cp index.html public/ && cp mina.jpg public/ && cp -r src public/ && (cp 'ChatGPT Image Mar 4, 2026, 09_07_18 PM.png' public/ || true)",
     "lint": "echo 'No lint needed'"
   },
   "dependencies": {
