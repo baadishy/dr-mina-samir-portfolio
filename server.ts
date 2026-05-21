@@ -19,29 +19,67 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'))); // serve static files from public if it exists
 app.use(express.static(path.join(__dirname, '.'))); // fallback serve static files from root
 
-let clientConnection: MongoClient | null = null;
+let clientConnectionPromise: Promise<MongoClient> | null = null;
+let seedingPromise: Promise<void> | null = null;
 let db: any = null;
-let seeded = false;
+
+function handleDbError(error: any) {
+  console.error('Database connection or query error:', error);
+  // Reset cached database and connections on connection or query error to force a reconnect next time
+  db = null;
+  clientConnectionPromise = null;
+  seedingPromise = null;
+}
 
 async function getDb() {
   if (db) return db;
-  try {
-    if (!clientConnection) {
-      clientConnection = new MongoClient(mongodbUri);
-      await clientConnection.connect();
-      console.log('Connected to MongoDB');
-    }
-    db = clientConnection.db();
+
+  if (!clientConnectionPromise) {
+    console.log('Initializing MongoClient...');
+    const client = new MongoClient(mongodbUri, {
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+    });
     
-    // Seed initial data if collections are empty (thread-safe and only calls once)
-    if (!seeded) {
-      await seedData(db);
+    // Cache the promise so concurrent requests await the same connection attempt
+    clientConnectionPromise = client.connect().then((connectedClient) => {
+      console.log('Successfully connected to MongoDB');
+      return connectedClient;
+    }).catch((err) => {
+      console.error('MongoDB connection failed:', err);
+      clientConnectionPromise = null; // enable retry
+      throw err;
+    });
+  }
+
+  try {
+    const client = await clientConnectionPromise;
+    const database = client.db();
+
+    // Ensure seeding only runs once, even with concurrent requests
+    if (!seedingPromise) {
+      console.log('Seeding process starting...');
+      seedingPromise = seedData(database).then(() => {
+        console.log('Seeding process completed successfully');
+      }).catch((err) => {
+        console.error('Seeding process failed:', err);
+        seedingPromise = null; // enable retry on failure
+        throw err;
+      });
     }
+
+    // Await the seeding completion so queries don't run against unseeded database
+    await seedingPromise;
+    
+    db = database;
+    return db;
   } catch (error) {
-    console.error('Failed to connect or seed MongoDB', error);
+    // If anything fails during the process, clear the cached promise to allow healing
+    handleDbError(error);
     throw error;
   }
-  return db;
 }
 
 async function seedData(database: any) {
@@ -84,9 +122,9 @@ async function seedData(database: any) {
         { name: 'Emergency Visit', price: 300, assistant_fees: 50, clinic_id: baniAhmedClinicId }
       ]);
     }
-    seeded = true;
   } catch (err) {
     console.error('Error seeding data:', err);
+    throw err;
   }
 }
 
@@ -102,6 +140,7 @@ app.get('/api/services', async (req, res) => {
     const services = await database.collection('services').find({}).toArray();
     res.json(services);
   } catch (error) {
+    handleDbError(error);
     res.status(500).json({ error: 'Failed to fetch services' });
   }
 });
@@ -117,6 +156,7 @@ app.get('/api/testimonials', async (req, res) => {
       .toArray();
     res.json(testimonials);
   } catch (error) {
+    handleDbError(error);
     res.status(500).json({ error: 'Failed to fetch testimonials' });
   }
 });
@@ -135,6 +175,7 @@ app.post('/api/testimonials', async (req, res) => {
     });
     res.json({ id: result.insertedId });
   } catch (error) {
+    handleDbError(error);
     res.status(500).json({ error: 'Failed to save testimonial' });
   }
 });
@@ -146,6 +187,7 @@ app.get('/api/clinics', async (req, res) => {
     const clinics = await database.collection('clinics').find({}).toArray();
     res.json(clinics);
   } catch (error) {
+    handleDbError(error);
     res.status(500).json({ error: 'Failed to fetch clinics' });
   }
 });
@@ -168,6 +210,7 @@ app.post('/api/appointments', async (req, res) => {
     });
     res.json({ id: result.insertedId });
   } catch (error) {
+    handleDbError(error);
     res.status(500).json({ error: 'Failed to book appointment' });
   }
 });
