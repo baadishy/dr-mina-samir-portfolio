@@ -1,0 +1,6 @@
+{
+  "name": "Dr. Mina Samir - Pediatric Consultant",
+  "description": "Professional medical consultant website for Dr. Mina Samir, specializing in comprehensive pediatric care and children's health.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

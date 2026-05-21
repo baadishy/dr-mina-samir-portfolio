@@ -1,0 +1,18 @@
+{
+  "name": "dr-mina-samir",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.ts",
+    "dev": "node server.ts",
+    "build": "echo 'No build step required'",
+    "lint": "echo 'No lint needed'"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongodb": "^7.2.0"
+  },
+  "type": "module"
+}

@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Mina Samir | Pediatric Consultant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Playfair Display', 'Cairo', 'serif'],
+                        'sans': ['Inter', 'Cairo', 'sans-serif'],
+                        'arabic': ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        medical: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        healing: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'slide-in-right': 'slideInRight 0.8s ease-out forwards',
+                        'scale-in': 'scaleIn 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideInRight: {
+                            '0%': { opacity: '0', transform: 'translateX(50px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                        scaleIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: blob 7s infinite;
+        }
+        
+        @keyframes blob {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0px, 0px) scale(1); }
+        }
+        
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, #0ea5e9, #22c55e);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .testimonial-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .heartbeat {
+            animation: heartbeat 2s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            10% { transform: scale(1.1); }
+            20% { transform: scale(1); }
+            30% { transform: scale(1.1); }
+            40% { transform: scale(1); }
+        }
+        
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        
+        .scroll-reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .parallax-bg {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        @keyframes flyAway {
+            0% { transform: translate(0, 0) rotate(0); opacity: 1; z-index: 9999; }
+            100% { transform: translate(1000px, -1000px) rotate(45deg); opacity: 0; z-index: 9999; }
+        }
+        .kite-fly {
+            animation: flyAway 1.5s cubic-bezier(1, 0, 0, 1) forwards !important;
+            z-index: 999999 !important;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800 bg-gray-50 overflow-x-hidden">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+        <div class="glass-effect shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <div class="flex items-center space-x-3 group cursor-pointer">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-medical-500 to-healing-500 flex items-center justify-center text-white font-bold text-xl group-hover:rotate-12 transition-transform duration-300">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <span class="font-serif text-2xl font-bold text-gray-800 group-hover:text-medical-600 transition-colors" data-t="doctor_name">Dr. Mina Samir</span>
+                    </div>
+                    
+                    <div class="hidden md:flex items-center space-x-8 rtl:space-x-reverse">
+                        <a href="#home" class="nav-link text-gray-700 hover:text-medical-600 font-medium transition-colors" data-t="nav_home">Home</a>
+                        <a href="#about" class="nav-link text-gray-700 hover:text-medical-600 font-medium transition-colors" data-t="nav_about">About</a>
+                        <a href="#expertise" class="nav-link text-gray-700 hover:text-medical-600 font-medium transition-colors" data-t="nav_expertise">Expertise</a>
+                        <a href="#testimonials" class="nav-link text-gray-700 hover:text-medical-600 font-medium transition-colors" data-t="nav_testimonials">Testimonials</a>
+                        
+                        <button onclick="toggleLanguage()" class="flex items-center space-x-2 rtl:space-x-reverse px-3 py-1 rounded-full border border-gray-200 hover:bg-gray-100 transition-colors">
+                            <i class="fas fa-language text-medical-500"></i>
+                            <span class="text-sm font-medium" id="lang-text">العربية</span>
+                        </button>
+
+                        <a href="#contact" class="px-6 py-2.5 bg-gradient-to-r from-medical-600 to-healing-600 text-white rounded-full font-medium hover:shadow-lg hover:scale-105 transition-all duration-300" data-t="nav_book">
+                            Book Appointment
+                        </a>
+                    </div>
+                    
+                    <div class="md:hidden flex items-center space-x-4 rtl:space-x-reverse">
+                        <button onclick="toggleLanguage()" class="p-2 rounded-full border border-gray-200">
+                            <i class="fas fa-language text-medical-500"></i>
+                        </button>
+                        <button class="text-gray-700 hover:text-medical-600" onclick="toggleMobileMenu()">
+                            <i class="fas fa-bars text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden glass-effect border-t border-gray-200">
+            <div class="px-4 pt-2 pb-6 space-y-2">
+                <a href="#home" class="block px-3 py-2 text-gray-700 hover:text-medical-600 hover:bg-medical-50 rounded-md transition-colors" data-t="nav_home">Home</a>
+                <a href="#about" class="block px-3 py-2 text-gray-700 hover:text-medical-600 hover:bg-medical-50 rounded-md transition-colors" data-t="nav_about">About</a>
+                <a href="#expertise" class="block px-3 py-2 text-gray-700 hover:text-medical-600 hover:bg-medical-50 rounded-md transition-colors" data-t="nav_expertise">Expertise</a>
+                <a href="#testimonials" class="block px-3 py-2 text-gray-700 hover:text-medical-600 hover:bg-medical-50 rounded-md transition-colors" data-t="nav_testimonials">Testimonials</a>
+                <a href="#contact" class="block px-3 py-2 text-medical-600 font-medium" data-t="nav_book">Book Appointment</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
+        <!-- Animated Background Elements -->
+        <div class="hero-blob bg-medical-300 w-96 h-96 top-20 -left-20 animation-delay-2000"></div>
+        <div class="hero-blob bg-healing-300 w-80 h-80 bottom-20 right-20 animation-delay-4000"></div>
+        <div class="hero-blob bg-purple-300 w-64 h-64 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animation-delay-6000"></div>
+        
+        <!-- Floating Medical Icons -->
+        <div class="absolute top-32 left-10 text-medical-200 text-4xl animate-float opacity-30">
+            <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="absolute top-1/3 right-20 text-healing-200 text-3xl animate-float opacity-30" style="animation-delay: 1s;">
+            <i class="fas fa-stethoscope"></i>
+        </div>
+        <div class="absolute bottom-32 left-1/4 text-medical-200 text-5xl animate-float opacity-20" style="animation-delay: 2s;">
+            <i class="fas fa-baby"></i>
+        </div>
+        <div class="absolute top-20 right-1/3 text-healing-200 text-3xl animate-float opacity-30" style="animation-delay: 1.5s;">
+            <i class="fas fa-plus"></i>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-2 gap-12 items-center">
+            <!-- Text Content -->
+            <div class="text-center md:text-left space-y-6 animate-fade-in-up">
+                <div class="inline-flex items-center space-x-2 rtl:space-x-reverse px-4 py-2 rounded-full bg-medical-100 text-medical-700 font-medium text-sm mb-4">
+                    <span class="w-2 h-2 rounded-full bg-healing-500 animate-pulse"></span>
+                    <span data-t="hero_badge">Pediatric Care Specialist</span>
+                </div>
+                
+                <h1 class="font-serif text-5xl md:text-7xl font-bold text-gray-900 leading-tight">
+                    <span data-t="hero_title_1">Caring for Your</span> <span class="text-gradient" data-t="hero_title_2">Little Ones</span> <span data-t="hero_title_3">with Expertise</span>
+                </h1>
+                
+                <p class="text-xl text-gray-600 max-w-lg mx-auto md:mx-0 leading-relaxed" data-t="hero_desc">
+                    Dr. Mina Samir brings 24 years of dedicated pediatric expertise, providing compassionate care that nurtures healthy futures for your children.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
+                    <a href="#contact" class="px-8 py-4 bg-gradient-to-r from-medical-600 to-healing-600 text-white rounded-full font-semibold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-2 rtl:space-x-reverse group">
+                        <span data-t="hero_cta_1">Schedule Consultation</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 rtl:group-hover:-translate-x-1 transition-transform"></i>
+                    </a>
+                    <a href="#about" class="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-full font-semibold text-lg hover:border-medical-500 hover:text-medical-600 transition-all duration-300 flex items-center justify-center">
+                        <span data-t="hero_cta_2">Learn More</span>
+                    </a>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-gray-200 mt-8">
+                    <div class="text-center sm:text-left rtl:sm:text-right">
+                        <div class="text-3xl font-bold text-medical-600 counter" data-target="24">24</div>
+                        <div class="text-sm text-gray-500 mt-1" data-t="stat_1">Years Experience</div>
+                    </div>
+                <div class="text-center sm:text-left rtl:sm:text-right">
+                        <div class="text-3xl font-bold text-healing-600 counter" data-target="15000">+15000</div>
+                        <div class="text-sm text-gray-500 mt-1" data-t="stat_2">Patients Treated</div>
+                    </div>
+                    <div class="text-center sm:text-left rtl:sm:text-right">
+                        <div class="text-3xl font-bold text-purple-600 counter" data-target="98">98%</div>
+                        <div class="text-sm text-gray-500 mt-1" data-t="stat_3">% Satisfaction</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doctor Image -->
+            <div class="relative animate-slide-in-right">
+                <div class="relative w-full max-w-md mx-auto">
+                    <!-- Decorative Rings -->
+                    <div class="absolute inset-0 rounded-full border-4 border-medical-200 animate-spin-slow opacity-30"></div>
+                    <div class="absolute inset-4 rounded-full border-4 border-healing-200 animate-spin-slow opacity-30" style="animation-direction: reverse;"></div>
+                    
+                    <!-- Image Container -->
+                    <div class="relative rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-medical-900/20 to-transparent z-10"></div>
+                        <img src="./ChatGPT Image Mar 4, 2026, 09_07_18 PM.png" alt="Dr. Mina Samir" class="w-full h-auto object-cover" loading="lazy">
+                        
+                        <!-- Floating Badge -->
+                        <div class="absolute bottom-6 left-6 right-6 glass-effect rounded-2xl p-4 z-20 animate-float" style="animation-delay: 0.5s;">
+                            <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                                <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-medical-600 text-xl">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-gray-800" data-t="hero_badge_1">Board Certified</div>
+                                    <div class="text-sm text-gray-600" data-t="hero_badge_2">Pediatric Consultant</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <a href="#about" class="text-gray-400 hover:text-medical-600 transition-colors">
+                <i class="fas fa-chevron-down text-2xl"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 bg-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-medical-50 to-transparent opacity-50"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div class="scroll-reveal">
+                    <div class="relative">
+                        <div class="absolute -top-4 -left-4 w-24 h-24 bg-healing-100 rounded-full opacity-50"></div>
+                        <div class="absolute -bottom-4 -right-4 w-32 h-32 bg-medical-100 rounded-full opacity-50"></div>
+                        <img src="./ChatGPT Image Mar 4, 2026, 09_07_18 PM.png" alt="Dr. Mina Samir Portrait" class="relative rounded-2xl shadow-2xl w-full max-w-md mx-auto transform hover:rotate-2 transition-transform duration-500" loading="lazy">
+                        
+                        <!-- Experience Badge -->
+                        <div class="absolute -bottom-6 -right-6 bg-white rounded-2xl shadow-xl p-6 animate-float">
+                            <div class="text-4xl font-bold text-medical-600">24+</div>
+                            <div class="text-gray-600 font-medium" data-t="about_exp_badge">Years of<br>Excellence</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-6 scroll-reveal">
+                    <div class="inline-flex items-center space-x-2 rtl:space-x-reverse text-medical-600 font-semibold">
+                        <i class="fas fa-user-md"></i>
+                        <span data-t="about_badge">About Dr. Mina Samir</span>
+                    </div>
+                    
+                    <h2 class="font-serif text-4xl md:text-5xl font-bold text-gray-900">
+                        <span data-t="about_title_1">Dedicated to</span> <span class="text-gradient" data-t="about_title_2">Children's Health</span> <span data-t="about_title_3">& Well-being</span>
+                    </h2>
+                    
+                    <p class="text-lg text-gray-600 leading-relaxed" data-t="about_desc_1">
+                        With nearly quarter a century of medical excellence, Dr. Mina Samir has dedicated his life to providing exceptional pediatric care. His approach combines cutting-edge medical knowledge with a warm, compassionate touch that puts both children and parents at ease.
+                    </p>
+                    
+                    <p class="text-lg text-gray-600 leading-relaxed" data-t="about_desc_2">
+                        Specializing in comprehensive pediatric consultation, Dr. Samir has treated thousands of young patients, from newborns to adolescents, ensuring each child receives personalized attention and the highest standard of medical care.
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-6 pt-6">
+                        <div class="flex items-start space-x-3 rtl:space-x-reverse group">
+                            <div class="w-10 h-10 rounded-lg bg-medical-100 flex items-center justify-center text-medical-600 group-hover:bg-medical-600 group-hover:text-white transition-colors">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800" data-t="about_stat_1_t">Expert Diagnosis</h4>
+                                <p class="text-sm text-gray-500" data-t="about_stat_1_d">Accurate assessments</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 rtl:space-x-reverse group">
+                            <div class="w-10 h-10 rounded-lg bg-healing-100 flex items-center justify-center text-healing-600 group-hover:bg-healing-600 group-hover:text-white transition-colors">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800" data-t="about_stat_2_t">Compassionate Care</h4>
+                                <p class="text-sm text-gray-500" data-t="about_stat_2_d">Patient-centered approach</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 rtl:space-x-reverse group">
+                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800" data-t="about_stat_3_t">Continuous Learning</h4>
+                                <p class="text-sm text-gray-500" data-t="about_stat_3_d">Latest treatments</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-3 rtl:space-x-reverse group">
+                            <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800" data-t="about_stat_4_t">24/7 Availability</h4>
+                                <p class="text-sm text-gray-500" data-t="about_stat_4_d">Emergency support</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-6">
+                        <a href="#contact" class="inline-flex items-center space-x-2 rtl:space-x-reverse text-medical-600 font-semibold hover:text-medical-700 transition-colors group">
+                            <span data-t="about_cta">Get in Touch</span>
+                            <i class="fas fa-arrow-right group-hover:translate-x-2 rtl:group-hover:-translate-x-2 transition-transform"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Expertise Section -->
+    <section id="expertise" class="py-24 bg-gradient-to-br from-gray-50 to-medical-50 relative overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-5">
+            <div class="absolute top-20 left-10 text-9xl text-medical-900 font-serif">+</div>
+            <div class="absolute bottom-20 right-10 text-9xl text-medical-900 font-serif">+</div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-9xl text-medical-900 font-serif">+</div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16 scroll-reveal">
+                <span class="inline-block px-4 py-1 rounded-full bg-medical-100 text-medical-700 font-medium text-sm mb-4" data-t="expertise_badge">Areas of Expertise</span>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-gray-900 mb-4"><span data-t="expertise_title_1">Comprehensive</span> <span class="text-gradient" data-t="expertise_title_2">Pediatric Services</span></h2>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto" data-t="expertise_subtitle">Offering a wide range of specialized pediatric services tailored to meet the unique needs of every child.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Service Card 1 -->
+                <div class="card-hover bg-white rounded-2xl p-8 shadow-lg border border-gray-100 scroll-reveal group">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-medical-400 to-medical-600 flex items-center justify-center text-white text-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3" data-t="service_1_t">Newborn Care</h3>
+                    <p class="text-gray-600 mb-4" data-t="service_1_d">Specialized care for infants including routine check-ups, vaccinations, and developmental monitoring.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-medical-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_1_i1">Routine examinations</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-medical-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_1_i2">Growth monitoring</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-medical-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_1_i3">Vaccination schedules</span></li>
+                    </ul>
+                </div>
+
+                <!-- Service Card 2 -->
+                <div class="card-hover bg-white rounded-2xl p-8 shadow-lg border border-gray-100 scroll-reveal group" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-healing-400 to-healing-600 flex items-center justify-center text-white text-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3" data-t="service_2_t">General Pediatrics</h3>
+                    <p class="text-gray-600 mb-4" data-t="service_2_d">Comprehensive health care for children of all ages, from toddlers to teenagers.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-healing-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_2_i1">Annual physicals</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-healing-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_2_i2">Illness treatment</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-healing-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_2_i3">Preventive care</span></li>
+                    </ul>
+                </div>
+
+                <!-- Service Card 3 -->
+                <div class="card-hover bg-white rounded-2xl p-8 shadow-lg border border-gray-100 scroll-reveal group" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3" data-t="service_3_t">Developmental Assessment</h3>
+                    <p class="text-gray-600 mb-4" data-t="service_3_d">Monitoring and evaluating children's developmental milestones and cognitive growth.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-purple-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_3_i1">Milestone tracking</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-purple-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_3_i2">Behavioral evaluation</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-purple-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_3_i3">Early intervention</span></li>
+                    </ul>
+                </div>
+
+                <!-- Service Card 4 -->
+                <div class="card-hover bg-white rounded-2xl p-8 shadow-lg border border-gray-100 scroll-reveal group">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <i class="fas fa-apple-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3" data-t="service_4_t">Nutritional Counseling</h3>
+                    <p class="text-gray-600 mb-4" data-t="service_4_d">Expert guidance on child nutrition, feeding practices, and dietary planning.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-orange-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_4_i1">Diet planning</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-orange-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_4_i2">Growth nutrition</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-orange-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_4_i3">Allergy management</span></li>
+                    </ul>
+                </div>
+
+                <!-- Service Card 5 -->
+                <div class="card-hover bg-white rounded-2xl p-8 shadow-lg border border-gray-100 scroll-reveal group" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white text-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3" data-t="service_5_t">Chronic Condition Management</h3>
+                    <p class="text-gray-600 mb-4" data-t="service_5_d">Ongoing care and management for children with chronic health conditions.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-pink-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_5_i1">Asthma care</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-pink-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_5_i2">Diabetes management</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-pink-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_5_i3">Regular monitoring</span></li>
+                    </ul>
+                </div>
+
+                <!-- Service Card 6 -->
+                <div class="card-hover bg-white rounded-2xl p-8 shadow-lg border border-gray-100 scroll-reveal group" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-2xl mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <i class="fas fa-syringe"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3" data-t="service_6_t">Immunization</h3>
+                    <p class="text-gray-600 mb-4" data-t="service_6_d">Complete vaccination services following international standards and schedules.</p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-teal-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_6_i1">Routine vaccines</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-teal-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_6_i2">Travel immunizations</span></li>
+                        <li class="flex items-center"><i class="fas fa-check text-teal-500 mr-2 rtl:ml-2 rtl:mr-0"></i> <span data-t="service_6_i3">Catch-up schedules</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-20 bg-gradient-to-r from-medical-600 to-healing-600 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-full h-full" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="scroll-reveal">
+                    <div class="text-5xl font-bold text-white mb-2 counter" data-target="24">24</div>
+                    <div class="text-medical-100 font-medium" data-t="stat_1">Years Experience</div>
+                </div>
+                <div class="scroll-reveal" style="transition-delay: 100ms;">
+                    <div class="text-5xl font-bold text-white mb-2 counter" data-target="15000">15000</div>
+                    <div class="text-medical-100 font-medium" data-t="stat_2">Patients Treated</div>
+                </div>
+                <div class="scroll-reveal" style="transition-delay: 200ms;">
+                    <div class="text-5xl font-bold text-white mb-2 counter" data-target="98">98%</div>
+                    <div class="text-medical-100 font-medium" data-t="stat_3">% Success Rate</div>
+                </div>
+                <div class="scroll-reveal" style="transition-delay: 300ms;">
+                    <div class="text-5xl font-bold text-white mb-2 counter" data-target="24">24</div>
+                    <div class="text-medical-100 font-medium" data-t="stat_4">Hour Support</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-24 bg-gray-900 relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden">
+            <div class="absolute top-10 left-10 w-64 h-64 bg-medical-500 rounded-full filter blur-3xl opacity-20 animate-pulse-slow"></div>
+            <div class="absolute bottom-10 right-10 w-96 h-96 bg-healing-500 rounded-full filter blur-3xl opacity-20 animate-pulse-slow" style="animation-delay: 2s;"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16 scroll-reveal">
+                <span class="inline-block px-4 py-1 rounded-full bg-white/10 text-medical-300 font-medium text-sm mb-4 border border-white/20" data-t="test_badge">Testimonials</span>
+                <h2 class="font-serif text-4xl md:text-5xl font-bold text-white mb-4"><span data-t="test_title_1">What</span> <span class="text-gradient" data-t="test_title_2">Parents Say</span></h2>
+                <p class="text-xl text-gray-400 max-w-2xl mx-auto" data-t="test_subtitle">Real stories from families who have experienced Dr. Samir's exceptional care.</p>
+            </div>
+
+            <!-- Testimonials Container -->
+            <div id="testimonials-empty" class="text-center py-12 hidden">
+                <p class="text-gray-400 text-lg mb-8" data-t="test_empty">No testimonials yet. Be the first to share your experience!</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="testimonials-container">
+                <!-- Testimonials will be loaded here -->
+            </div>
+
+            <!-- Add Testimonial Button -->
+            <div class="mt-16 text-center scroll-reveal">
+                <button onclick="openTestimonialModal()" class="inline-flex items-center space-x-3 px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-2xl border border-white/20 transition-all duration-300 group">
+                    <i class="fas fa-plus-circle text-medical-400 group-hover:rotate-90 transition-transform duration-300"></i>
+                    <span class="font-bold" data-t="test_add">Share Your Experience</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonial Modal -->
+    <div id="testimonialModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden relative">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900" data-t="test_modal_title">Share Your Experience</h3>
+                    <button onclick="closeTestimonialModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="testimonialForm" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-t="test_parent_name">Name</label>
+                        <input type="text" id="testName" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-t="test_child_cond">Condition (Optional)</label>
+                        <input type="text" id="testCondition" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-t="test_modal_rating">Rating</label>
+                        <div id="ratingStars" class="flex space-x-2 text-2xl cursor-pointer">
+                            <i class="fas fa-star text-yellow-400" data-rating="1"></i>
+                            <i class="fas fa-star text-yellow-400" data-rating="2"></i>
+                            <i class="fas fa-star text-yellow-400" data-rating="3"></i>
+                            <i class="fas fa-star text-yellow-400" data-rating="4"></i>
+                            <i class="fas fa-star text-yellow-400" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="testRating" value="5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1" data-t="test_modal_content">Your Review</label>
+                        <textarea id="testContent" rows="4" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 outline-none resize-none" required></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-medical-600 to-healing-600 text-white rounded-xl font-bold hover:shadow-lg transition-all duration-300" data-t="test_modal_submit">
+                        Submit Review
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-16">
+                <div class="scroll-reveal">
+                    <span class="inline-block px-4 py-1 rounded-full bg-medical-100 text-medical-700 font-medium text-sm mb-4" data-t="contact_badge">Get in Touch</span>
+                    <h2 class="font-serif text-4xl md:text-5xl font-bold text-gray-900 mb-6"><span data-t="contact_title_1">Book Your</span> <span class="text-gradient" data-t="contact_title_2">Consultation</span></h2>
+                    <p class="text-lg text-gray-600 mb-8" data-t="contact_subtitle">Ready to provide your child with the best pediatric care? Schedule an appointment with Dr. Mina Samir today.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4 rtl:space-x-reverse group">
+                            <div class="w-12 h-12 rounded-xl bg-medical-100 flex items-center justify-center text-medical-600 group-hover:bg-medical-600 group-hover:text-white transition-colors">
+                                <i class="fas fa-map-marker-alt text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-1" data-t="clinic_1_title">Minya Clinic</h4>
+                                <p class="text-gray-600" data-t="clinic_1_address">Hussaini St, East of El Mohammadi, Minya</p>
+                                <p class="text-sm text-medical-600 font-medium" data-t="clinic_1_hours">Mon-Sat: 12:00 PM - 2:30 PM</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start space-x-4 rtl:space-x-reverse group">
+                            <div class="w-12 h-12 rounded-xl bg-healing-100 flex items-center justify-center text-healing-600 group-hover:bg-healing-600 group-hover:text-white transition-colors">
+                                <i class="fas fa-map-marker-alt text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-1" data-t="clinic_2_title">Bani Ahmed Clinic</h4>
+                                <p class="text-gray-600" data-t="clinic_2_address">Bani Ahmed El Sharkia</p>
+                                <p class="text-sm text-healing-600 font-medium" data-t="clinic_2_hours">Mon-Sat: 5:00 PM - 7:00 PM</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4 rtl:space-x-reverse group">
+                            <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                                <i class="fas fa-phone text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-1" data-t="contact_info_2_t">Phone</h4>
+                                <p class="text-gray-600" data-t="contact_info_2_d">01006763805</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4 rtl:space-x-reverse group">
+                            <div class="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-colors">
+                                <i class="fas fa-clock text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-1" data-t="contact_info_4_t">Consultation Days</h4>
+                                <p class="text-gray-600" data-t="contact_info_4_d">Mon - Sat (Sundays Off)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Social Links -->
+                    <div class="flex space-x-4 mt-8">
+                        <a href="https://www.facebook.com/minasamirfarag" target="_blank" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-medical-600 hover:text-white transition-all duration-300">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://twitter.com/minasamirfarag" target="_blank" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-medical-600 hover:text-white transition-all duration-300">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/in/minasamirfarag" target="_blank" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-medical-600 hover:text-white transition-all duration-300">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://www.youtube.com/@pediatricsecrets3232" target="_blank" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-medical-600 hover:text-white transition-all duration-300">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="scroll-reveal bg-gray-50 rounded-3xl p-8 shadow-lg border border-gray-100">
+                    <form id="appointmentProcessForm" class="space-y-6">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-t="form_child_name">Patient Name (Full Name - 3 names)</label>
+                                <input type="text" id="patientName" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 focus:border-transparent transition-all outline-none" data-p="form_name_placeholder" placeholder="Enter Patient Name (Up to third name)" required>
+                            </div>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-t="form_birth_date">Birth Date</label>
+                                <input type="date" id="birthDate" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 focus:border-transparent transition-all outline-none" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-t="form_phone">Phone</label>
+                                <input type="tel" id="appointmentPhone" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 focus:border-transparent transition-all outline-none" data-p="form_phone_placeholder" placeholder="01XXXXXXXXX" required>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-t="form_clinic">Choose Clinic</label>
+                                <select id="clinicSelect" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 focus:border-transparent transition-all outline-none" required>
+                                    <option value="" data-t="form_clinic">Loading clinics...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-t="service_selection">Service</label>
+                                <select id="serviceSelect" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 focus:border-transparent transition-all outline-none" required disabled>
+                                    <option value="" data-t="form_clinic">Please choose a clinic first</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-t="form_day">Appointment Day</label>
+                                <select id="daySelect" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 focus:border-transparent transition-all outline-none" required disabled>
+                                    <option value="" data-t="form_day">Select Day</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" data-t="form_time">Appointment Time</label>
+                                <select id="timeSelect" class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-medical-500 focus:border-transparent transition-all outline-none" required disabled>
+                                    <option value="" data-t="form_time">Select Time</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="w-full py-4 bg-gradient-to-r from-medical-600 to-healing-600 text-white rounded-xl font-semibold text-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 flex items-center justify-center space-x-2 group relative">
+                            <span data-t="form_btn" class="relative z-10">Request Appointment</span>
+                            <i class="fas fa-paper-plane kite-icon relative z-10 transition-all duration-500 group-hover:translate-x-1 group-hover:-translate-y-1"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Message Popup -->
+        <div id="successPopup" class="fixed inset-0 z-[110] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 transition-opacity duration-300">
+            <div class="bg-white rounded-3xl p-10 max-w-sm w-full text-center transform scale-90 transition-transform duration-300">
+                <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 animate-bounce">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-900 mb-2" data-t="success_title">Success!</h3>
+                <p class="text-gray-600 mb-8" data-t="success_msg">Your appointment has been booked. We will contact you shortly.</p>
+                <button onclick="closeSuccessPopup()" class="w-full py-4 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-colors" data-t="success_close">
+                    Close
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div class="sm:col-span-2">
+                    <div class="flex items-center space-x-3 rtl:space-x-reverse mb-4">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-medical-500 to-healing-500 flex items-center justify-center text-white">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <span class="font-serif text-2xl font-bold" data-t="doctor_name">Dr. Mina Samir</span>
+                    </div>
+                    <p class="text-gray-400 mb-4 max-w-md" data-t="footer_desc">Providing exceptional pediatric care for 24 years. Dedicated to the health and well-being of your children with compassion and expertise.</p>
+                    <div class="flex space-x-4 rtl:space-x-reverse">
+                        <a href="https://www.facebook.com/minasamirfarag" target="_blank" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://twitter.com/minasamirfarag" target="_blank" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter"></i></a>
+                        <a href="https://www.linkedin.com/in/minasamirfarag" target="_blank" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="https://www.youtube.com/@pediatricsecrets3232" target="_blank" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4" data-t="footer_quick_links">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#home" class="hover:text-medical-400 transition-colors" data-t="nav_home">Home</a></li>
+                        <li><a href="#about" class="hover:text-medical-400 transition-colors" data-t="nav_about">About</a></li>
+                        <li><a href="#expertise" class="hover:text-medical-400 transition-colors" data-t="nav_expertise">Expertise</a></li>
+                        <li><a href="#testimonials" class="hover:text-medical-400 transition-colors" data-t="nav_testimonials">Testimonials</a></li>
+                        <li><a href="#contact" class="hover:text-medical-400 transition-colors" data-t="nav_contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4" data-t="footer_services">Services</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#expertise" class="hover:text-medical-400 transition-colors" data-t="service_1_t">Newborn Care</a></li>
+                        <li><a href="#expertise" class="hover:text-medical-400 transition-colors" data-t="service_2_t">General Pediatrics</a></li>
+                        <li><a href="#expertise" class="hover:text-medical-400 transition-colors" data-t="service_6_t">Immunization</a></li>
+                        <li><a href="#expertise" class="hover:text-medical-400 transition-colors" data-t="service_3_t">Developmental Assessment</a></li>
+                        <li><a href="#expertise" class="hover:text-medical-400 transition-colors" data-t="service_4_t">Nutritional Counseling</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm" data-t="footer_copy">&copy; 2026 Dr. Mina Samir. All rights reserved.</p>
+                <div class="flex space-x-6 rtl:space-x-reverse mt-4 md:mt-0 text-sm text-gray-500">
+                    <a href="#" class="hover:text-white transition-colors" data-t="footer_privacy">Privacy Policy</a>
+                    <a href="#" class="hover:text-white transition-colors" data-t="footer_terms">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" onclick="scrollToTop()" class="fixed bottom-8 right-8 w-12 h-12 bg-gradient-to-r from-medical-600 to-healing-600 text-white rounded-full shadow-lg opacity-0 invisible transition-all duration-300 hover:scale-110 z-50 flex items-center justify-center">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="fixed bottom-8 left-8 z-[120] transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none max-w-sm w-full bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center space-x-3 rtl:space-x-reverse border border-white/10">
+        <div id="toastIcon" class="w-8 h-8 rounded-full flex items-center justify-center text-lg shrink-0"></div>
+        <div id="toastText" class="text-sm font-medium"></div>
+    </div>
+
+    <script src="/src/main.js"></script>
+</body>
+</html>
