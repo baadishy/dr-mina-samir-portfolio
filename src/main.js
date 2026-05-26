@@ -1,3 +1,6 @@
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+
 // Translation Data
 const translations = {
     en: {
@@ -141,7 +144,49 @@ const translations = {
         // Clinics from database
         "Minya Clinic (عيادة المنيا)": "Minya Clinic",
         "Bani Ahmed Clinic (عيادة بني أحمد)": "Bani Ahmed Clinic",
-        lang_btn: "العربية"
+        gcal_sync_title: "Sync with Google Calendar",
+        gcal_sync_desc: "Add this appointment directly to your Google Calendar.",
+        gcal_disconnect: "Disconnect",
+        gcal_connected_toast: "Google Calendar connected!",
+        gcal_success_toast: "Appointment added to your Google Calendar!",
+        gcal_error_toast: "Could not add event to Google Calendar, but appointment was booked.",
+        lang_btn: "العربية",
+        nav_admin: "Admin Portal",
+        footer_admin: "Doctor Dashboard",
+        admin_title: "Dr. Mina Samir - Clinic Management",
+        admin_subtitle: "Secure dashboard for managing clinic appointments and Google Calendar synchronization.",
+        admin_loading: "Loading dashboard details...",
+        admin_auth_title: "Doctor & Assistant Sign-In",
+        admin_auth_desc: "This dashboard connects directly with Google Calendar to sync appointments. Please sign in with your clinical Google account.",
+        admin_signin: "Sign in with Google Account",
+        admin_active_session: "Doctor Authenticated",
+        admin_calendar: "Linked Google Calendar",
+        admin_active: "Active & Synced",
+        admin_sync_to_primary: "Primary Calendar (Recommended)",
+        admin_sync_to_custom: "Dedicated Clinic Calendar",
+        admin_unsynced_banner: "Bulk Actions",
+        admin_pending_count: "pending sync",
+        admin_sign_out: "Disconnect Calendar Account",
+        admin_sync_all_btn: "Sync Pending",
+        admin_title_bookings: "Clinic Booking Log",
+        admin_all_clinics: "All Clinics",
+        admin_unsynced_only: "Unsynced only",
+        admin_no_bookings: "No bookings recorded",
+        admin_no_bookings_desc: "There are no appointments matching the current filters.",
+        th_patient: "Patient",
+        th_clinic: "Clinic & Service",
+        th_datetime: "Date & Time",
+        th_sync: "Calendar Sync Status",
+        th_actions: "Actions",
+        status_synced: "Synced to Calendar",
+        status_unsynced: "Unsynced",
+        action_sync_now: "Sync now",
+        action_delete: "Delete",
+        confirm_delete: "Are you sure you want to delete this appointment?",
+        sync_success: "Appointment synchronized successfully!",
+        sync_all_success: "All appointments synchronized successfully!",
+        delete_success: "Appointment deleted successfully!",
+        reauth_needed: "Google authentication session has expired! Please click on Google sign-in to refresh."
     },
     ar: {
         nav_home: "الرئيسية",
@@ -284,9 +329,245 @@ const translations = {
         // Clinics from database
         "Minya Clinic (عيادة المنيا)": "عيادة المنيا",
         "Bani Ahmed Clinic (عيادة بني أحمد)": "عيادة بني أحمد",
-        lang_btn: "English"
+        gcal_sync_title: "الربط مع تقويم Google",
+        gcal_sync_desc: "أضف هذا الموعد مباشرة إلى تقويم Google الخاص بك.",
+        gcal_disconnect: "إلغاء الربط",
+        gcal_connected_toast: "تم ربط تقويم Google بنجاح!",
+        gcal_success_toast: "تمت إضافة الموعد إلى تقويم Google الخاص بك!",
+        gcal_error_toast: "لم نتمكن من إضافة الحدث إلى تقويم Google، ولكن تم حجز الموعد بنجاح.",
+        lang_btn: "English",
+        nav_admin: "بوابة الإدارة",
+        footer_admin: "لوحة تحكم الطبيب",
+        admin_title: "د. مينا سمير - إدارة العيادات",
+        admin_subtitle: "لوحة تحكم آمنة لإدارة مواعيد العيادات ومزامنتها مع تقويم Google.",
+        admin_loading: "جاري تحميل تفاصيل لوحة التحكم...",
+        admin_auth_title: "تسجيل دخول الطبيب ومساعد العيادة",
+        admin_auth_desc: "تتصل لوحة التحكم هذه مباشرة بتقويم Google لمزامنة المواعيد. يرجى تسجيل الدخول بحساب Google الطبي للبدء الحصري للمزامنة.",
+        admin_signin: "تسجيل الدخول باستخدام حساب Google",
+        admin_active_session: "تم التحقق من الطبيب",
+        admin_calendar: "تقويم Google المرتبط",
+        admin_active: "نشط ومتصل تلقائياً",
+        admin_sync_to_primary: "التقويم الأساسي (موصى به)",
+        admin_sync_to_custom: "تقويم منفصل لعيادة د. مينا سمير",
+        admin_unsynced_banner: "إجراءات جماعية",
+        admin_pending_count: "انتظار المزامنة",
+        admin_sign_out: "إلغاء ربط الحساب",
+        admin_sync_all_btn: "مزامنة المعلق",
+        admin_title_bookings: "سجل حجز العيادات",
+        admin_all_clinics: "جميع العيادات",
+        admin_unsynced_only: "غير المزامنة فقط",
+        admin_no_bookings: "لا توجد حجوزات مسجلة",
+        admin_no_bookings_desc: "لا توجد مواعيد تطابق فلاتر البحث والتصفية المحددة حالياً.",
+        th_patient: "المريض",
+        th_clinic: "العيادة والخدمة",
+        th_datetime: "التاريخ والوقت",
+        th_sync: "حالة مزامنة التقويم",
+        th_actions: "الإجراءات",
+        status_synced: "تمت المزامنة بالتقويم",
+        status_unsynced: "غير مزامن",
+        action_sync_now: "مزامنة الآن",
+        action_delete: "حذف الموعد",
+        confirm_delete: "هل أنت متأكد من رغبتك في حذف هذا الموعد نهائياً؟",
+        sync_success: "تمت مزامنة الموعد بنجاح بالتقويم الخاص بك!",
+        sync_all_success: "تمت مزامنة جميع الحجوزات بنجاح بالتقويم الخاص بك!",
+        delete_success: "تم حذف الموعد المحدد بنجاح!",
+        reauth_needed: "انتهت صلاحية جلسة تقويم Google للطبيب! يرجى النقر على زر جوجل لإعادة تنشيط الاتصال."
     }
 };
+
+let app = null;
+let auth = null;
+let provider = null;
+let cachedAccessToken = null;
+let gcalUser = null;
+let isGCalEnabled = false;
+
+async function initFirebase() {
+    try {
+        const response = await fetch('/firebase-applet-config.json');
+        const firebaseConfig = await response.json();
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        provider = new GoogleAuthProvider();
+        provider.addScope('https://www.googleapis.com/auth/calendar');
+        provider.addScope('https://www.googleapis.com/auth/calendar.events');
+        
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                if (!cachedAccessToken) {
+                    isGCalEnabled = false;
+                } else {
+                    gcalUser = user;
+                }
+            } else {
+                cachedAccessToken = null;
+                gcalUser = null;
+                isGCalEnabled = false;
+            }
+            updateGCalUI();
+        });
+    } catch (e) {
+        console.error("Failed to initialize Firebase Auth", e);
+    }
+}
+
+async function handleGCalToggle() {
+    if (!auth) {
+        await initFirebase();
+    }
+    
+    if (isGCalEnabled) {
+        isGCalEnabled = false;
+        updateGCalUI();
+        window.showToast(currentLang === 'en' ? "Sync disabled." : "تم إيقاف المزامنة.", 'info');
+        return;
+    }
+    
+    if (cachedAccessToken) {
+        isGCalEnabled = true;
+        updateGCalUI();
+        window.showToast(translations[currentLang].gcal_connected_toast, 'success');
+        return;
+    }
+    
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        if (credential && credential.accessToken) {
+            cachedAccessToken = credential.accessToken;
+            gcalUser = result.user;
+            isGCalEnabled = true;
+            updateGCalUI();
+            window.showToast(translations[currentLang].gcal_connected_toast, 'success');
+        } else {
+            throw new Error("Could not obtain access token");
+        }
+    } catch (err) {
+        console.error("Google login failed:", err);
+        isGCalEnabled = false;
+        updateGCalUI();
+        window.showToast(currentLang === 'en' ? "Authentication failed." : "فشل التحقق من الهوية.", 'error');
+    }
+}
+
+async function handleGCalDisconnect() {
+    if (auth) {
+        try {
+            await signOut(auth);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    cachedAccessToken = null;
+    gcalUser = null;
+    isGCalEnabled = false;
+    updateGCalUI();
+    window.showToast(currentLang === 'en' ? "Google Calendar disconnected." : "تم إلغاء ربط تقويم Google.", 'info');
+}
+
+function updateGCalUI() {
+    const toggleBtn = document.getElementById('gcalToggleBtn');
+    const toggleDot = document.getElementById('gcalToggleDot');
+    const userInfo = document.getElementById('gcal-user-info');
+    const userAvatar = document.getElementById('gcal-user-avatar');
+    const userName = document.getElementById('gcal-user-name');
+    const statusText = document.getElementById('gcal-status-text');
+    
+    if (!toggleBtn || !toggleDot || !userInfo || !statusText) return;
+    
+    if (isGCalEnabled) {
+        toggleBtn.classList.remove('bg-gray-200');
+        toggleBtn.classList.add('bg-medical-600');
+        toggleDot.classList.add('translate-x-5.5');
+        toggleDot.classList.remove('translate-x-0');
+        
+        if (gcalUser) {
+            userInfo.classList.remove('hidden');
+            if (userAvatar) userAvatar.src = gcalUser.photoURL || 'https://www.gravatar.com/avatar/?d=mp';
+            if (userName) userName.textContent = gcalUser.displayName || gcalUser.email;
+            
+            statusText.textContent = currentLang === 'en' 
+                ? "Will add to Google Calendar upon booking!" 
+                : "سيتم إضافة الموعد إلى تقويم Google عند الحجز!";
+            statusText.classList.remove('text-gray-500/90');
+            statusText.classList.add('text-green-600', 'font-medium');
+        }
+    } else {
+        toggleBtn.classList.add('bg-gray-200');
+        toggleBtn.classList.remove('bg-medical-600');
+        toggleDot.classList.remove('translate-x-5.5');
+        toggleDot.classList.add('translate-x-0');
+        userInfo.classList.add('hidden');
+        
+        statusText.textContent = translations[currentLang].gcal_sync_desc;
+        statusText.classList.remove('text-green-600', 'font-medium');
+        statusText.classList.add('text-gray-500/90');
+    }
+}
+
+async function createCalendarEvent(appointmentData) {
+    if (!isGCalEnabled || !cachedAccessToken) return;
+    
+    try {
+        const clinic = allClinics.find(c => String(c._id) === String(appointmentData.clinicId));
+        const clinicName = clinic ? (translations[currentLang][clinic.name] || clinic.name) : "Clinic";
+        const clinicAddress = clinic ? (translations[currentLang][clinic.address] || clinic.address || "") : "";
+        
+        const service = allServices.find(s => String(s._id) === String(appointmentData.serviceId));
+        const serviceName = service ? (translations[currentLang][service.name] || service.name) : "Pediatric Consultation";
+        
+        const startDateTimeStr = `${appointmentData.appointmentDay}T${appointmentData.appointmentTime}:00`;
+        let [h, m] = appointmentData.appointmentTime.split(':').map(Number);
+        m += 30;
+        if (m >= 60) {
+            m -= 60;
+            h += 1;
+        }
+        const endH = String(h).padStart(2, '0');
+        const endM = String(m).padStart(2, '0');
+        const endDateTimeStr = `${appointmentData.appointmentDay}T${endH}:${endM}:00`;
+        
+        const eventData = {
+            summary: currentLang === 'en' 
+                ? `Dr. Mina Samir Appointment - ${appointmentData.patientName}`
+                : `موعد عيادة د. مينا سمير - ${appointmentData.patientName}`,
+            location: `${clinicName} (${clinicAddress})`,
+            description: currentLang === 'en'
+                ? `Appointment details:\n- Patient: ${appointmentData.patientName}\n- Service: ${serviceName}\n- Contact: ${appointmentData.phone}\n\nThank you for booking! See you soon.`
+                : `تفاصيل الموعد:\n- المريض: ${appointmentData.patientName}\n- الخدمة: ${serviceName}\n- الهاتف: ${appointmentData.phone}\n\nشكراً لحجزكم! نراكم قريباً.`,
+            start: {
+                dateTime: startDateTimeStr,
+                timeZone: 'Africa/Cairo'
+            },
+            end: {
+                dateTime: endDateTimeStr,
+                timeZone: 'Africa/Cairo'
+            },
+            reminders: {
+                useDefault: true
+            }
+        };
+        
+        const gcalRes = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${cachedAccessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(eventData)
+        });
+        
+        if (gcalRes.ok) {
+            window.showToast(translations[currentLang].gcal_success_toast, 'success');
+        } else {
+            console.error("Google Calendar event creation failed status:", gcalRes.status);
+            window.showToast(translations[currentLang].gcal_error_toast, 'error');
+        }
+    } catch (e) {
+        console.error("Exception in Google Calendar event creation", e);
+        window.showToast(translations[currentLang].gcal_error_toast, 'error');
+    }
+}
 
 let currentLang = 'en';
 
@@ -341,6 +622,7 @@ function updateLanguage() {
             clinicSelect.options[0].textContent = translations[currentLang].form_clinic;
         }
     }
+    updateGCalUI();
 }
 
 // Window functions
@@ -712,11 +994,15 @@ if (appointmentForm) {
             });
             
             if (res.ok) {
+                if (isGCalEnabled && cachedAccessToken) {
+                    await createCalendarEvent(data);
+                }
                 setTimeout(() => {
                     window.openSuccessPopup();
                     appointmentForm.reset();
                     if (kite) kite.classList.remove('kite-fly');
                     if (submitBtn) submitBtn.disabled = false;
+                    updateGCalUI();
                 }, 1000);
             } else {
                 throw new Error("Failed to book");
@@ -734,6 +1020,39 @@ document.addEventListener('DOMContentLoaded', () => {
     updateLanguage();
     loadTestimonials();
     loadFormData();
+    
+    // Register Admin Dashboard Listeners
+    const adminGoogleBtn = document.getElementById('adminGoogleSignInBtn');
+    if (adminGoogleBtn) {
+        adminGoogleBtn.addEventListener('click', handleAdminSignIn);
+    }
+    
+    const adminDisconnectBtns = document.querySelectorAll('#adminDisconnectBtn');
+    adminDisconnectBtns.forEach(btn => {
+        btn.addEventListener('click', handleAdminSignOut);
+    });
+
+    const adminSyncAllBtn = document.getElementById('adminSyncAllBtn');
+    if (adminSyncAllBtn) {
+        adminSyncAllBtn.addEventListener('click', window.syncBulkAppointments);
+    }
+
+    const adminSearchInput = document.getElementById('adminSearchInput');
+    if (adminSearchInput) {
+        adminSearchInput.addEventListener('input', renderAdminAppointments);
+    }
+
+    const adminClinicFilter = document.getElementById('adminClinicFilter');
+    if (adminClinicFilter) {
+        adminClinicFilter.addEventListener('change', renderAdminAppointments);
+    }
+
+    const adminUnsyncedOnly = document.getElementById('adminUnsyncedOnly');
+    if (adminUnsyncedOnly) {
+        adminUnsyncedOnly.addEventListener('change', renderAdminAppointments);
+    }
+    
+    initFirebase();
     
     // Performance optimizations for scroll/parallax
     let lastScrollY = 0;
@@ -797,3 +1116,570 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+// ==========================================
+// Admin Dashboard Control Logic
+// ==========================================
+let adminAppointments = [];
+let adminAuthDetails = null;
+
+window.openAdminDashboard = function(e) {
+    if (e) e.preventDefault();
+    const modal = document.getElementById('adminDashboardModal');
+    if (!modal) return;
+    
+    // Smooth Transition Reveal
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.add('opacity-100');
+        const modalChild = modal.querySelector('.relative');
+        if (modalChild) {
+            modalChild.classList.remove('scale-95');
+            modalChild.classList.add('scale-100');
+        }
+    }, 10);
+    
+    // Auto-load details
+    loadAdminDashboard();
+};
+
+window.closeAdminDashboard = function() {
+    const modal = document.getElementById('adminDashboardModal');
+    if (!modal) return;
+    
+    modal.classList.remove('opacity-100');
+    const modalChild = modal.querySelector('.relative');
+    if (modalChild) {
+        modalChild.classList.add('scale-95');
+        modalChild.classList.remove('scale-100');
+    }
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+async function loadAdminDashboard() {
+    const loadingEl = document.getElementById('admin-loading');
+    const authContainer = document.getElementById('admin-auth-container');
+    const mainContainer = document.getElementById('admin-main-container');
+    
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (authContainer) authContainer.classList.add('hidden');
+    if (mainContainer) mainContainer.classList.add('hidden');
+    
+    try {
+        // 1. Fetch server administrative Google auth configuration
+        const authRes = await fetch('/api/admin/google-auth');
+        const authData = await authRes.json();
+        
+        if (authData.connected) {
+            adminAuthDetails = authData;
+            
+            // Update GCal headers
+            const avatarEl = document.getElementById('admin-avatar');
+            const nameEl = document.getElementById('admin-name');
+            const emailEl = document.getElementById('admin-email');
+            const calendarSelectEl = document.getElementById('adminCalendarSelect');
+            const calendarStatusTextEl = document.getElementById('calendar-status-text');
+            
+            if (nameEl) nameEl.textContent = authData.name || "Doctor / Assistant";
+            if (emailEl) emailEl.textContent = authData.email || "";
+            if (calendarSelectEl) {
+                calendarSelectEl.value = (authData.calendarId === 'primary') ? 'primary' : 'clinic';
+            }
+            if (calendarStatusTextEl) {
+                if (authData.isExpired) {
+                    calendarStatusTextEl.textContent = currentLang === 'en' 
+                        ? "Session Expired (Click Google Sign-In to update)" 
+                        : "انتهت الجلسة (اضغط تسجيل دخول Google للتحديث)";
+                    calendarStatusTextEl.classList.add('text-amber-500');
+                    calendarStatusTextEl.classList.remove('text-green-600');
+                } else {
+                    calendarStatusTextEl.textContent = currentLang === 'en' 
+                        ? "Ready / Automatically Synced" 
+                        : "نشط ومتصل تلقائياً";
+                    calendarStatusTextEl.classList.add('text-green-600');
+                    calendarStatusTextEl.classList.remove('text-amber-500');
+                }
+            }
+            
+            // Fetch appointments
+            await fetchAppointments();
+            
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (mainContainer) mainContainer.classList.remove('hidden');
+        } else {
+            // Not connected
+            adminAuthDetails = null;
+            if (loadingEl) loadingEl.classList.add('hidden');
+            if (authContainer) authContainer.classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error("Failed to load doctor dashboard:", err);
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (authContainer) authContainer.classList.remove('hidden');
+    }
+}
+
+window.updateCalendarDestination = async function(value) {
+    if (!adminAuthDetails) return;
+    
+    const loadingEl = document.getElementById('admin-loading');
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    
+    try {
+        let calendarId = 'primary';
+        
+        if (value === 'clinic') {
+            // Retrieve or create the custom calendar "Dr. Mina Samir Clinic"
+            const listRes = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+                headers: { 'Authorization': `Bearer ${adminAuthDetails.accessToken}` }
+            });
+            
+            if (listRes.status === 401) {
+                window.showToast(translations[currentLang].reauth_needed, 'error');
+                if (loadingEl) loadingEl.classList.add('hidden');
+                // Reset value
+                const calendarSelectEl = document.getElementById('adminCalendarSelect');
+                if (calendarSelectEl) calendarSelectEl.value = adminAuthDetails.calendarId === 'primary' ? 'primary' : 'clinic';
+                return;
+            }
+            
+            const listData = await listRes.json();
+            let clinicCalendar = listData.items?.find(c => c.summary === "Dr. Mina Samir Clinic");
+            
+            if (clinicCalendar) {
+                calendarId = clinicCalendar.id;
+            } else {
+                // Create new Google Calendar
+                const createRes = await fetch('https://www.googleapis.com/calendar/v3/calendars', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${adminAuthDetails.accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        summary: "Dr. Mina Samir Clinic",
+                        description: "Appointments booked via Dr. Mina Samir Pediatric website."
+                    })
+                });
+                
+                if (createRes.ok) {
+                    const newCalendar = await createRes.json();
+                    calendarId = newCalendar.id;
+                    window.showToast(currentLang === 'en' ? "Created dedicated 'Dr. Mina Samir Clinic' Calendar!" : "تم إنشاء تقويم 'Dr. Mina Samir Clinic' مخصص!", 'success');
+                } else {
+                    calendarId = 'primary';
+                    window.showToast(currentLang === 'en' ? "Failed to create custom calendar. Defaulted to Primary." : "فشل إنشاء تقويم مخصص. تم التعيين للرئيسي.", 'warning');
+                }
+            }
+        }
+        
+        // Save to backend configuration
+        const updateRes = await fetch('/api/admin/google-auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                accessToken: adminAuthDetails.accessToken,
+                email: adminAuthDetails.email,
+                name: adminAuthDetails.name,
+                calendarId: calendarId
+            })
+        });
+        
+        if (updateRes.ok) {
+            adminAuthDetails.calendarId = calendarId;
+            window.showToast(currentLang === 'en' ? "Calendar sync destination updated!" : "تم تحديث جهة مزامنة التقويم!", 'success');
+        } else {
+            throw new Error("Failed to save calendar ID to server");
+        }
+    } catch (err) {
+        console.error("Failed to change calendar destination:", err);
+        window.showToast(currentLang === 'en' ? "Your session might be dormant. Clean re-authentication recommended." : "قد تكون الجلسة منتهية الحالية. يوصى بإعادة تسجيل الدخول بكامل حسابه.", 'error');
+    } finally {
+        if (loadingEl) loadingEl.classList.add('hidden');
+    }
+};
+
+async function fetchAppointments() {
+    try {
+        const res = await fetch('/api/appointments');
+        if (res.ok) {
+            adminAppointments = await res.json();
+            renderAdminAppointments();
+        }
+    } catch (e) {
+        console.error("Failed to fetch appointments:", e);
+    }
+}
+
+function renderAdminAppointments() {
+    const body = document.getElementById('adminBookingsTableBody');
+    const totalBadge = document.getElementById('admin-total-badge');
+    const unsyncedCountEl = document.getElementById('admin-count-unsynced');
+    const emptyState = document.getElementById('admin-empty-state');
+    
+    if (!body) return;
+    
+    const searchText = (document.getElementById('adminSearchInput')?.value || '').toLowerCase().trim();
+    const clinicFilter = document.getElementById('adminClinicFilter')?.value || '';
+    const unsyncedOnly = document.getElementById('adminUnsyncedOnly')?.checked || false;
+    
+    // Filter
+    const filtered = adminAppointments.filter(app => {
+        // Search filter matching name or phone
+        const nameMatch = (app.patientName || '').toLowerCase().includes(searchText);
+        const phoneMatch = (app.phone || '').includes(searchText);
+        if (searchText && !nameMatch && !phoneMatch) return false;
+        
+        // Clinic filter
+        if (clinicFilter) {
+            const matchedClinic = allClinics.find(c => String(c._id) === String(app.clinicId));
+            const normFilter = clinicFilter.toLowerCase();
+            const clinicName = (matchedClinic?.name || app.clinicId || '').toLowerCase();
+            
+            // Fuzzy search on Clinic title (Ar / En)
+            const matchesMinya = normFilter.includes("minya") && clinicName.includes("minya");
+            const matchesBaniAhmed = normFilter.includes("bani") && (clinicName.includes("bani") || clinicName.includes("احمد") || clinicName.includes("أحمد"));
+            if (!matchesMinya && !matchesBaniAhmed) return false;
+        }
+        
+        // Unsynced filter
+        if (unsyncedOnly && app.gcalSynced) return false;
+        
+        return true;
+    });
+    
+    // Calculations
+    const unsyncedCount = adminAppointments.filter(app => !app.gcalSynced).length;
+    if (unsyncedCountEl) unsyncedCountEl.textContent = unsyncedCount;
+    if (totalBadge) {
+        totalBadge.textContent = currentLang === 'ar' 
+            ? `${filtered.length} موعد` 
+            : `${filtered.length} appointments`;
+    }
+    
+    if (filtered.length === 0) {
+        body.innerHTML = '';
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+    }
+    
+    if (emptyState) emptyState.classList.add('hidden');
+    
+    body.innerHTML = filtered.map(app => {
+        const clinicObj = allClinics.find(c => String(c._id) === String(app.clinicId));
+        const clinicName = clinicObj ? (translations[currentLang][clinicObj.name] || clinicObj.name) : (app.clinicId || "Clinic");
+        
+        const serviceObj = allServices.find(s => String(s._id) === String(app.serviceId));
+        const serviceName = serviceObj ? (translations[currentLang][serviceObj.name] || serviceObj.name) : "Pediatric Consultation";
+        
+        // Date formatting
+        const appDate = new Date(app.appointmentDay);
+        const formattedDate = isNaN(appDate.getTime()) ? app.appointmentDay : appDate.toLocaleDateString(currentLang === 'ar' ? 'ar-EG' : 'en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+        
+        // Time formatting
+        let displayTime = app.appointmentTime;
+        try {
+            const [h, m] = app.appointmentTime.split(':').map(Number);
+            const displayH = h % 12 || 12;
+            const ampm = h >= 12 ? (currentLang === 'ar' ? 'م' : 'PM') : (currentLang === 'ar' ? 'ص' : 'AM');
+            displayTime = `${displayH}:${m.toString().padStart(2, '0')} ${ampm}`;
+        } catch(e) {}
+
+        const syncBadgeHtml = app.gcalSynced 
+            ? `<span class="inline-flex items-center space-x-1 rtl:space-x-reverse px-2.5 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded-full border border-green-100">
+                 <i class="fab fa-google text-[11px]"></i>
+                 <span>${translations[currentLang].status_synced}</span>
+               </span>`
+            : `<button onclick="syncSingleAppointment('${app._id}')" class="inline-flex items-center space-x-1 rtl:space-x-reverse px-2.5 py-1 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-full border border-amber-200 transition-colors">
+                 <i class="fas fa-sync-alt text-[10px]"></i>
+                 <span>${translations[currentLang].action_sync_now}</span>
+               </button>`;
+
+        return `
+            <tr id="booking-${app._id}" class="hover:bg-gray-50/70 transition-colors">
+                <td class="px-6 py-4 font-bold text-gray-900 border-b border-gray-100">
+                    <div class="text-sm font-bold text-gray-900">${app.patientName}</div>
+                    <div class="text-xs text-gray-400 font-medium mt-0.5">${translations[currentLang].th_patient}: ${app.birthDate} · ${app.phone}</div>
+                </td>
+                <td class="px-6 py-4 border-b border-gray-100">
+                    <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md inline-block max-w-[150px] truncate" title="${clinicName}">${clinicName}</span>
+                    <div class="text-xs text-gray-400 mt-1 font-medium">${serviceName}</div>
+                </td>
+                <td class="px-6 py-4 text-xs font-bold text-gray-700 border-b border-gray-100">
+                    <div>${formattedDate}</div>
+                    <div class="text-[11px] text-medical-600 mt-1 font-mono">${displayTime}</div>
+                </td>
+                <td class="px-6 py-4 border-b border-gray-100 font-medium">
+                    ${syncBadgeHtml}
+                </td>
+                <td class="px-6 py-4 text-center border-b border-gray-100">
+                    <button onclick="deleteAppointment('${app._id}')" class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors" title="${translations[currentLang].action_delete}">
+                        <i class="far fa-trash-alt text-base overflow-hidden"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Google Sign-In on doctor dashboard
+async function handleAdminSignIn() {
+    if (!auth) {
+        await initFirebase();
+    }
+    
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        
+        if (credential && credential.accessToken) {
+            const token = credential.accessToken;
+            const user = result.user;
+            
+            // 1. Fetch Google Calendars to see if clinic calendar exists
+            const listRes = await fetch('https://www.googleapis.com/calendar/v3/users/me/calendarList', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const listData = await listRes.json();
+            
+            let clinicCalendar = listData.items?.find(c => c.summary === "Dr. Mina Samir Clinic");
+            let calendarId = clinicCalendar ? clinicCalendar.id : null;
+            
+            // 2. Create the custom clinic calendar if not found
+            if (!calendarId) {
+                const createRes = await fetch('https://www.googleapis.com/calendar/v3/calendars', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        summary: "Dr. Mina Samir Clinic",
+                        description: "Appointments booked via Dr. Mina Samir Pediatric website."
+                    })
+                });
+                
+                if (createRes.ok) {
+                    const newCalendar = await createRes.json();
+                    calendarId = newCalendar.id;
+                    window.showToast(currentLang === 'en' ? "Created dedicated 'Dr. Mina Samir Clinic' Calendar!" : "تم إنشاء تقويم 'Dr. Mina Samir Clinic' مخصص!", 'success');
+                } else {
+                    // Fallback to primary if restricted
+                    calendarId = 'primary';
+                }
+            }
+            
+            // 3. Post to server to save token & calendar details
+            await fetch('/api/admin/google-auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    accessToken: token,
+                    email: user.email,
+                    name: user.displayName || "Doctor",
+                    calendarId: calendarId
+                })
+            });
+            
+            window.showToast(translations[currentLang].gcal_connected_toast, 'success');
+            
+            // 4. Reload layout
+            loadAdminDashboard();
+        }
+    } catch (err) {
+        console.error("Doctor login connection failed:", err);
+        window.showToast(currentLang === 'en' ? "Failed to authenticate physician account." : "فشل التحقق من هوية الطبيب.", 'error');
+    }
+}
+
+async function handleAdminSignOut() {
+    try {
+        await fetch('/api/admin/google-auth', { method: 'DELETE' });
+        if (auth) {
+            await signOut(auth);
+        }
+    } catch(e) {}
+    adminAuthDetails = null;
+    loadAdminDashboard();
+    window.showToast(currentLang === 'en' ? "Google Calendar disconnected." : "تم إلغاء ربط تقويم Google.", 'info');
+}
+
+window.syncSingleAppointment = async function(id) {
+    const app = adminAppointments.find(a => String(a._id) === String(id));
+    if (!app || !adminAuthDetails) return;
+    
+    try {
+        const clinicObj = allClinics.find(c => String(c._id) === String(app.clinicId));
+        const clinicName = clinicObj ? clinicObj.name : "Clinic";
+        const clinicAddress = clinicObj ? clinicObj.address : "";
+        
+        const serviceObj = allServices.find(s => String(s._id) === String(app.serviceId));
+        const serviceName = serviceObj ? serviceObj.name : "Pediatric Consultation";
+        
+        const startDateTimeStr = `${app.appointmentDay}T${app.appointmentTime}:00`;
+        let [h, m] = app.appointmentTime.split(':').map(Number);
+        m += 30;
+        if (m >= 60) {
+            m -= 60;
+            h += 1;
+        }
+        const endH = String(h).padStart(2, '0');
+        const endM = String(m).padStart(2, '0');
+        const endDateTimeStr = `${app.appointmentDay}T${endH}:${endM}:00`;
+        
+        const eventData = {
+            summary: `Dr. Mina Samir Appointment - ${app.patientName}`,
+            location: `${clinicName} (${clinicAddress})`,
+            description: `Appointment details:\n- Patient: ${app.patientName}\n- Service: ${serviceName}\n- Contact: ${app.phone}\n\nThank you for booking! See you soon.`,
+            start: {
+                dateTime: startDateTimeStr,
+                timeZone: 'Africa/Cairo'
+            },
+            end: {
+                dateTime: endDateTimeStr,
+                timeZone: 'Africa/Cairo'
+            },
+            reminders: {
+                useDefault: true
+            }
+        };
+        
+        const gcalRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(adminAuthDetails.calendarId)}/events`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminAuthDetails.accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(eventData)
+        });
+        
+        if (gcalRes.ok) {
+            const gcalData = await gcalRes.json();
+            
+            // Save state in MongoDB
+            await fetch(`/api/appointments/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gcalSynced: true, gcalEventId: gcalData.id })
+            });
+            
+            window.showToast(translations[currentLang].sync_success, 'success');
+            await fetchAppointments();
+        } else {
+            const errBody = await gcalRes.json();
+            if (gcalRes.status === 401) {
+                window.showToast(translations[currentLang].reauth_needed, 'error');
+            } else {
+                throw new Error("Calendar sync status failure");
+            }
+        }
+    } catch (e) {
+        console.error("Sync single appointment exception:", e);
+        window.showToast(currentLang === 'en' ? "Could not sync to Google Calendar." : "عذراً، فشلت عملية المزامنة مع تقويم جوجل.", 'error');
+    }
+};
+
+window.syncBulkAppointments = async function() {
+    const unsynced = adminAppointments.filter(app => !app.gcalSynced).slice(0, 10);
+    if (unsynced.length === 0) return;
+    
+    const syncButton = document.getElementById('adminSyncAllBtn');
+    const syncIcon = document.getElementById('adminSyncIcon');
+    if (syncButton) syncButton.disabled = true;
+    if (syncIcon) syncIcon.classList.add('animate-spin');
+    
+    let syncedSuccess = 0;
+    
+    for (const app of unsynced) {
+        try {
+            const clinicObj = allClinics.find(c => String(c._id) === String(app.clinicId));
+            const clinicName = clinicObj ? clinicObj.name : "Clinic";
+            const clinicAddress = clinicObj ? clinicObj.address : "";
+            
+            const serviceObj = allServices.find(s => String(s._id) === String(app.serviceId));
+            const serviceName = serviceObj ? serviceObj.name : "Pediatric Consultation";
+            
+            const startDateTimeStr = `${app.appointmentDay}T${app.appointmentTime}:00`;
+            let [h, m] = app.appointmentTime.split(':').map(Number);
+            m += 30;
+            if (m >= 60) {
+                m -= 60;
+                h += 1;
+            }
+            const endH = String(h).padStart(2, '0');
+            const endM = String(m).padStart(2, '0');
+            const endDateTimeStr = `${app.appointmentDay}T${endH}:${endM}:00`;
+            
+            const eventData = {
+                summary: `Dr. Mina Samir Appointment - ${app.patientName}`,
+                location: `${clinicName} (${clinicAddress})`,
+                description: `Appointment details:\n- Patient: ${app.patientName}\n- Service: ${serviceName}\n- Contact: ${app.phone}\n\nThank you for booking! See you soon.`,
+                start: {
+                    dateTime: startDateTimeStr,
+                    timeZone: 'Africa/Cairo'
+                },
+                end: {
+                    dateTime: endDateTimeStr,
+                    timeZone: 'Africa/Cairo'
+                },
+                reminders: {
+                    useDefault: true
+                }
+            };
+            
+            const gcalRes = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(adminAuthDetails.calendarId)}/events`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${adminAuthDetails.accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(eventData)
+            });
+            
+            if (gcalRes.ok) {
+                const gcalData = await gcalRes.json();
+                await fetch(`/api/appointments/${app._id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gcalSynced: true, gcalEventId: gcalData.id })
+                });
+                syncedSuccess++;
+            }
+        } catch (err) {
+            console.error("Bulk sync loop error on item:", app._id, err);
+        }
+    }
+    
+    if (syncButton) syncButton.disabled = false;
+    if (syncIcon) syncIcon.classList.remove('animate-spin');
+    
+    if (syncedSuccess > 0) {
+        window.showToast(translations[currentLang].sync_all_success, 'success');
+        await fetchAppointments();
+    } else {
+        window.showToast(currentLang === 'en' ? "No pending appointments were synced. Verify Google link." : "تحقق من اتصال Google لمزامنة المواعيد المعرّفة.", 'warning');
+    }
+};
+
+window.deleteAppointment = async function(id) {
+    if (!confirm(translations[currentLang].confirm_delete)) return;
+    
+    try {
+        const res = await fetch(`/api/appointments/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            window.showToast(translations[currentLang].delete_success, 'success');
+            await fetchAppointments();
+        }
+    } catch (e) {
+        console.error("Failed to delete appointment via admin dashboard:", e);
+        window.showToast(currentLang === 'en' ? "Could not delete appointment." : "عذراً، فشلت عملية الحذف للموعد الطبي.", 'error');
+    }
+};

@@ -192,12 +192,89 @@ app.get('/api/clinics', async (req, res) => {
   }
 });
 
+// Helpers for Google Calendar Auto-Sync
+async function autoSyncToGoogleCalendar(appointmentData: any) {
+  try {
+    const database = await getDb();
+    const config = await database.collection('admin_config').findOne({ _id: 'google_auth' });
+    if (!config || !config.accessToken || !config.calendarId) {
+      console.log('No active doctor Google Calendar configuration found for auto-sync.');
+      return null;
+    }
+
+    // Retrieve clinic and service info for rich details
+    const clinics = await database.collection('clinics').find({}).toArray();
+    const services = await database.collection('services').find({}).toArray();
+    
+    // Find matching clinic and service
+    const clinic = clinics.find((c: any) => c._id.toString() === appointmentData.clinicId || String(c._id) === String(appointmentData.clinicId));
+    const clinicName = clinic ? clinic.name : "Clinic";
+    const clinicAddress = clinic ? clinic.address : "";
+
+    const service = services.find((s: any) => s._id.toString() === appointmentData.serviceId || String(s._id) === String(appointmentData.serviceId));
+    const serviceName = service ? service.name : "Pediatric Consultation";
+
+    const startDateTimeStr = `${appointmentData.appointmentDay}T${appointmentData.appointmentTime}:00`;
+    
+    // Calculate end time
+    let [h, m] = appointmentData.appointmentTime.split(':').map(Number);
+    m += 30;
+    if (m >= 60) {
+      m -= 60;
+      h += 1;
+    }
+    const endH = String(h).padStart(2, '0');
+    const endM = String(m).padStart(2, '0');
+    const endDateTimeStr = `${appointmentData.appointmentDay}T${endH}:${endM}:00`;
+
+    const eventData = {
+      summary: `Dr. Mina Samir Appointment - ${appointmentData.patientName}`,
+      location: `${clinicName} (${clinicAddress})`,
+      description: `Appointment details:\n- Patient: ${appointmentData.patientName}\n- Service: ${serviceName}\n- Contact: ${appointmentData.phone}\n\nThank you for booking! See you soon.`,
+      start: {
+        dateTime: startDateTimeStr,
+        timeZone: 'Africa/Cairo'
+      },
+      end: {
+        dateTime: endDateTimeStr,
+        timeZone: 'Africa/Cairo'
+      },
+      reminders: {
+        useDefault: true
+      }
+    };
+
+    const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(config.calendarId)}/events`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(eventData)
+    });
+
+    if (response.ok) {
+      const resultData: any = await response.json();
+      console.log(`Auto-synced event successfully to Google Calendar: ${resultData.id}`);
+      return resultData.id;
+    } else {
+      const errText = await response.text();
+      console.error(`Google Calendar auto-sync API returned error status ${response.status}:`, errText);
+      return null;
+    }
+  } catch (err) {
+    console.error('Exception during Google Calendar auto-sync:', err);
+    return null;
+  }
+}
+
 // Appointments
 app.post('/api/appointments', async (req, res) => {
   try {
     const database = await getDb();
     const { patientName, birthDate, phone, clinicId, serviceId, appointmentDay, appointmentTime } = req.body;
-    const result = await database.collection('appointments').insertOne({
+    
+    const appointmentPayload: any = {
       patientName,
       birthDate,
       phone,
@@ -206,12 +283,136 @@ app.post('/api/appointments', async (req, res) => {
       appointmentDay,
       appointmentTime,
       status: 'pending',
-      createdAt: new Date()
-    });
-    res.json({ id: result.insertedId });
+      createdAt: new Date(),
+      gcalSynced: false,
+      gcalEventId: null
+    };
+
+    // Auto-sync attempt (fails silently if no active token / expired token)
+    const gcalEventId = await autoSyncToGoogleCalendar(appointmentPayload);
+    if (gcalEventId) {
+      appointmentPayload.gcalSynced = true;
+      appointmentPayload.gcalEventId = gcalEventId;
+    }
+
+    const result = await database.collection('appointments').insertOne(appointmentPayload);
+    res.json({ id: result.insertedId, gcalSynced: appointmentPayload.gcalSynced });
   } catch (error) {
     handleDbError(error);
     res.status(500).json({ error: 'Failed to book appointment' });
+  }
+});
+
+app.get('/api/appointments', async (req, res) => {
+  try {
+    const database = await getDb();
+    const appointments = await database.collection('appointments')
+      .find({})
+      .sort({ createdAt: -1 })
+      .toArray();
+    res.json(appointments);
+  } catch (error) {
+    handleDbError(error);
+    res.status(500).json({ error: 'Failed to fetch appointments' });
+  }
+});
+
+app.put('/api/appointments/:id', async (req, res) => {
+  try {
+    const database = await getDb();
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    let filter = {};
+    try {
+      filter = { _id: new ObjectId(id) };
+    } catch (e) {
+      filter = { _id: id };
+    }
+
+    const { _id, ...fieldsToUpdate } = updateData;
+
+    await database.collection('appointments').updateOne(filter, { $set: fieldsToUpdate });
+    res.json({ success: true });
+  } catch (error) {
+    handleDbError(error);
+    res.status(500).json({ error: 'Failed to update appointment' });
+  }
+});
+
+app.delete('/api/appointments/:id', async (req, res) => {
+  try {
+    const database = await getDb();
+    const { id } = req.params;
+    let filter = {};
+    try {
+      filter = { _id: new ObjectId(id) };
+    } catch (e) {
+      filter = { _id: id };
+    }
+    await database.collection('appointments').deleteOne(filter);
+    res.json({ success: true });
+  } catch (error) {
+    handleDbError(error);
+    res.status(500).json({ error: 'Failed to delete appointment' });
+  }
+});
+
+// Admin Configuration endpoints
+app.post('/api/admin/google-auth', async (req, res) => {
+  try {
+    const database = await getDb();
+    const { accessToken, email, name, calendarId } = req.body;
+    await database.collection('admin_config').updateOne(
+      { _id: 'google_auth' },
+      {
+        $set: {
+          accessToken,
+          email,
+          name,
+          calendarId,
+          updatedAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (error) {
+    handleDbError(error);
+    res.status(500).json({ error: 'Failed to save Google Auth config' });
+  }
+});
+
+app.get('/api/admin/google-auth', async (req, res) => {
+  try {
+    const database = await getDb();
+    const config = await database.collection('admin_config').findOne({ _id: 'google_auth' });
+    if (!config) {
+      return res.json({ connected: false });
+    }
+    const isExpired = (new Date().getTime() - new Date(config.updatedAt).getTime()) > 12 * 60 * 60 * 1000;
+    res.json({
+      connected: true,
+      accessToken: config.accessToken,
+      email: config.email,
+      name: config.name,
+      calendarId: config.calendarId,
+      isExpired
+    });
+  } catch (error) {
+    handleDbError(error);
+    res.status(500).json({ error: 'Failed to fetch Google Auth config' });
+  }
+});
+
+app.delete('/api/admin/google-auth', async (req, res) => {
+  try {
+    const database = await getDb();
+    await database.collection('admin_config').deleteOne({ _id: 'google_auth' });
+    res.json({ success: true });
+  } catch (error) {
+    handleDbError(error);
+    res.status(500).json({ error: 'Failed to delete config' });
   }
 });
 
