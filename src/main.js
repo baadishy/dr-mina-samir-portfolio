@@ -407,6 +407,9 @@ async function initFirebase() {
         const firebaseAuthModule = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
         
         const response = await fetch('/firebase-applet-config.json');
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status} finding firebase config file`);
+        }
         const firebaseConfig = await response.json();
         app = initializeApp(firebaseConfig);
         auth = firebaseAuthModule.getAuth(app);
@@ -435,6 +438,7 @@ async function initFirebase() {
         });
     } catch (e) {
         console.error("Failed to initialize Firebase Auth", e);
+        throw e;
     }
 }
 
@@ -473,7 +477,28 @@ async function handleGCalToggle() {
         console.error("Google login failed:", err);
         isGCalEnabled = false;
         updateGCalUI();
-        window.showToast(currentLang === 'en' ? "Authentication failed." : "فشل التحقق من الهوية.", 'error');
+        
+        const errStr = (err && err.message) ? err.message : String(err);
+        const errCode = (err && err.code) ? err.code : '';
+        let errMsg = currentLang === 'en' ? "Authentication failed." : "فشل التحقق من الهوية.";
+        
+        if (errCode === 'auth/unauthorized-domain' || errStr.includes('unauthorized-domain') || errStr.includes('unauthorized_domain')) {
+            errMsg = currentLang === 'en'
+                ? "Unauthorized Domain: Please authorize this Vercel domain in your Firebase Console ('Authentication -> Settings -> Authorized Domains')."
+                : "النطاق غير مصرح به: يرجى إضافة رابط Vercel هذا في لوحة تحكم Firebase ضمن 'Authorized Domains'.";
+        } else if (errCode === 'auth/popup-blocked' || errStr.includes('popup-blocked')) {
+            errMsg = currentLang === 'en'
+                ? "Popup Blocked! Please enable popups in your browser settings to authorize Google Account."
+                : "تم حظر النافذة المنبثقة! يرجى تمكين النوافذ المنبثقة في متصفحك لربط حساب Google.";
+        } else if (errStr.includes('initialization') || errStr.includes('fetch') || errStr.includes('Unexpected token') || errStr.includes('config')) {
+            errMsg = currentLang === 'en'
+                ? `Connection/Config Error: Unable to load Firebase configuration. Error: ${errStr}`
+                : `خطأ في الاتصال/الإعدادات: تعذر تحميل تكوين Firebase. تأكد من أن ملف الإعدادات تم نسخه أثناء البناء على Vercel. الخطأ: ${errStr}`;
+        } else {
+            errMsg = (currentLang === 'en' ? "Google Authentication failed: " : "فشل مصادقة Google: ") + (errCode || errStr);
+        }
+        
+        window.showToast(errMsg, 'error');
     }
 }
 
