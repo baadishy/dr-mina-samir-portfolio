@@ -139,23 +139,23 @@
                     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-medical-500 to-healing-500 flex items-center justify-center text-white font-bold text-sm">
                         <i class="fas fa-user-md"></i>
                     </div>
-                    <span class="font-serif text-lg font-bold text-gray-800" id="nav-brand-text">Dr. Mina Samir</span>
+                    <span class="font-serif text-sm sm:text-lg font-bold text-gray-800" id="nav-brand-text">Dr. Mina Samir</span>
                 </div>
                 
-                <div class="flex items-center space-x-4 rtl:space-x-reverse">
-                    <a href="/" class="text-xs font-semibold text-gray-600 hover:text-medical-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 flex items-center gap-1.5">
+                <div class="flex items-center space-x-2 sm:space-x-4 rtl:space-x-reverse">
+                    <a href="/" class="text-xs font-semibold text-gray-600 hover:text-medical-600 transition-colors px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg hover:bg-gray-100 flex items-center gap-1.5">
                         <i class="fas fa-home"></i>
-                        <span id="nav-back-home">Back to Site</span>
+                        <span id="nav-back-home" class="hidden sm:inline">Back to Site</span>
                     </a>
                     
-                    <button onclick="toggleAdminLanguage()" class="flex items-center space-x-1 px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-xs font-medium">
+                    <button onclick="toggleAdminLanguage()" class="flex items-center space-x-1 px-2.5 py-1 sm:py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-xs font-medium">
                         <i class="fas fa-language text-medical-500"></i>
                         <span id="lang-toggle-text">العربية</span>
                     </button>
 
-                    <button id="nav-logout-btn" onclick="handlePortalLogOut()" class="hidden text-xs font-semibold text-red-600 hover:text-red-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50 flex items-center gap-1.5">
+                    <button id="nav-logout-btn" onclick="handlePortalLogOut()" class="hidden text-xs font-semibold text-red-600 hover:text-red-700 transition-colors px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg hover:bg-red-50 flex items-center gap-1.5">
                         <i class="fas fa-sign-out-alt"></i>
-                        <span id="nav-logout-label">Logout</span>
+                        <span id="nav-logout-label" class="hidden sm:inline">Logout</span>
                     </button>
                 </div>
             </div>
@@ -308,27 +308,27 @@
 
                 <!-- Clinic Log Filters Header -->
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-5 rounded-3xl border border-gray-100 shadow-sm gap-4">
-                    <div class="flex items-center space-x-2.5 rtl:space-x-reverse">
+                    <div class="flex items-center justify-between md:justify-start space-x-2.5 rtl:space-x-reverse w-full md:w-auto">
                         <h4 class="text-base font-bold text-gray-900" id="bookings-log-title">Clinic Booking Log</h4>
                         <span class="px-3 py-0.5 text-xs bg-medical-50 text-medical-600 font-bold rounded-full border border-medical-100" id="admin-total-badge">0 appointments</span>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                         <!-- Search input box -->
-                        <div class="relative min-w-[200px]">
+                        <div class="relative w-full sm:w-48 md:w-64">
                             <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
                             <input type="text" id="adminSearchInput" oninput="renderAdminAppointments()" class="w-full pl-9 pr-4 py-2 rounded-xl text-xs border border-gray-200 focus:ring-2 focus:ring-medical-500 outline-none" placeholder="Search customer...">
                         </div>
 
                         <!-- Clinic selection filter -->
-                        <select id="adminClinicFilter" onchange="renderAdminAppointments()" class="px-3 py-2 text-xs border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-medical-500 outline-none">
+                        <select id="adminClinicFilter" onchange="renderAdminAppointments()" class="px-3 py-2 text-xs border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-medical-500 outline-none w-full sm:w-auto">
                             <option value="" id="filter-all-clinics">All Clinics</option>
                             <option value="Minya Clinic (عيادة المنيا)" id="filter-minya-clinic">Minya Clinic</option>
                             <option value="Bani Ahmed Clinic (عيادة بني أحمد)" id="filter-bani-ahmed-clinic">Bani Ahmed Clinic</option>
                         </select>
 
                         <!-- Unscheduled-only toggle -->
-                        <label class="flex items-center space-x-2 rtl:space-x-reverse cursor-pointer text-xs font-semibold text-gray-600">
+                        <label class="flex items-center space-x-2 rtl:space-x-reverse cursor-pointer text-xs font-semibold text-gray-600 self-start sm:self-auto py-1">
                             <input type="checkbox" id="adminUnsyncedOnly" onchange="renderAdminAppointments()" class="rounded border-gray-300 text-medical-600 focus:ring-medical-500">
                             <span id="filter-unsynced-only">Unsynced only</span>
                         </label>
@@ -337,7 +337,8 @@
 
                 <!-- Patient Booking Table and empty state details -->
                 <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-[350px]">
-                    <div class="overflow-x-auto">
+                    <!-- Desktop Table View -->
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="w-full text-sm text-left rtl:text-right text-gray-500">
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50/50 border-b border-gray-100 font-bold">
                                 <tr>
@@ -352,6 +353,11 @@
                                 <!-- Dynamic bookings will load here -->
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Mobile Cards List View -->
+                    <div id="adminBookingsCardsContainer" class="block md:hidden p-4 space-y-4">
+                        <!-- Dynamic responsive cards will render here -->
                     </div>
 
                     <!-- Dynamic Empty state -->

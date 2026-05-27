@@ -3,6 +3,7 @@ let auth = null;
 let provider = null;
 let signInWithPopup = null;
 let signOut = null;
+let GoogleAuthProvider = null;
 let adminAuthDetails = null;
 let adminAppointments = [];
 let allClinics = [];
@@ -430,6 +431,7 @@ async function initFirebase() {
         
         signInWithPopup = firebaseAuthModule.signInWithPopup;
         signOut = firebaseAuthModule.signOut;
+        GoogleAuthProvider = firebaseAuthModule.GoogleAuthProvider;
     } catch (e) {
         console.error("Firebase auth initialization failed", e);
     }
@@ -554,7 +556,17 @@ window.handleAdminSignIn = async function() {
         }
     } catch (err) {
         console.error("OAuth verification rejected:", err);
-        showToast(translations[currentLang].reauth_needed, 'error');
+        let errMsg = translations[currentLang].reauth_needed;
+        if (err && (err.code === 'auth/unauthorized-domain' || (err.message && err.message.includes('unauthorized-domain')))) {
+            errMsg = currentLang === 'en' 
+                ? "Unauthorized Domain: Please authorize this Vercel domain in your Firebase console ('Authentication -> Settings -> Authorized Domains')."
+                : "النطاق غير مصرح به: يرجى إضافة رابط Vercel هذا في لوحة تحكم Firebase ضمن 'Authorized Domains'.";
+        } else if (err && (err.code === 'auth/popup-blocked' || (err.message && err.message.includes('popup-blocked')))) {
+            errMsg = currentLang === 'en'
+                ? "Popup Blocked! Please enable popups in your browser settings to authorize Google Account."
+                : "تم حظر النافذة المنبثقة! يرجى تمكين النوافذ المنبثقة في متصفحك لربط حساب Google.";
+        }
+        showToast(errMsg, 'error');
     }
 };
 
@@ -655,6 +667,7 @@ async function fetchAppointments() {
 
 window.renderAdminAppointments = function() {
     const body = document.getElementById('adminBookingsTableBody');
+    const cardsContainer = document.getElementById('adminBookingsCardsContainer');
     const totalBadge = document.getElementById('admin-total-badge');
     const unsyncedCountEl = document.getElementById('admin-count-unsynced');
     const emptyState = document.getElementById('admin-empty-state');
@@ -690,12 +703,14 @@ window.renderAdminAppointments = function() {
     
     if (filtered.length === 0) {
         body.innerHTML = '';
+        if (cardsContainer) cardsContainer.innerHTML = '';
         if (emptyState) emptyState.classList.remove('hidden');
         return;
     }
     
     if (emptyState) emptyState.classList.add('hidden');
     
+    // 1. Render Table (Desktop)
     body.innerHTML = filtered.map(app => {
         const clinicObj = allClinics.find(c => String(c._id) === String(app.clinicId));
         const clinicName = clinicObj ? clinicObj.name : "Clinic";
@@ -757,6 +772,82 @@ window.renderAdminAppointments = function() {
             </tr>
         `;
     }).join('');
+    
+    // 2. Render Cards (Mobile-first responsive list layout)
+    if (cardsContainer) {
+        cardsContainer.innerHTML = filtered.map(app => {
+            const clinicObj = allClinics.find(c => String(c._id) === String(app.clinicId));
+            const clinicName = clinicObj ? clinicObj.name : "Clinic";
+            const serviceObj = allServices.find(s => String(s._id) === String(app.serviceId));
+            const serviceName = serviceObj ? serviceObj.name : "Pediatric Consultation";
+            
+            const formattedDate = app.appointmentDay;
+            const displayTime = app.appointmentTime;
+            
+            let syncBadgeHtmlMobile = '';
+            if (app.gcalSynced) {
+                syncBadgeHtmlMobile = `
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-150">
+                        <i class="fas fa-check-circle mr-1.5 google-sync-check inline-block"></i> ${translations[currentLang].synced}
+                    </span>
+                `;
+            } else {
+                const btnClass = adminAuthDetails 
+                    ? "bg-medical-50 hover:bg-medical-100 text-medical-600 border-medical-200" 
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed";
+                syncBadgeHtmlMobile = `
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between w-full gap-2 mt-2">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-150">
+                            <i class="fas fa-exclamation-triangle mr-1.5 inline-block"></i> ${translations[currentLang].unsynced}
+                        </span>
+                        <button onclick="syncSingleAppointment('${app._id}')" ${!adminAuthDetails ? 'disabled' : ''} class="px-3 py-1.5 text-xs font-bold border rounded-xl transition-all ${btnClass}">
+                            <i class="fas fa-sync-alt text-[10px] mr-1"></i> Sync To Google
+                        </button>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm space-y-3 hover:border-medical-200 transition-colors">
+                    <div class="flex justify-between items-start gap-2">
+                        <div class="min-w-0">
+                            <div class="font-bold text-gray-800 text-sm truncate">${app.patientName}</div>
+                            <div class="text-[11px] text-gray-500 mt-1 space-y-0.5">
+                                <div><span class="text-gray-400">${translations[currentLang].th_dob}:</span> ${app.birthDate}</div>
+                                <div><span class="text-gray-400">${translations[currentLang].th_phone}:</span> ${app.phone}</div>
+                            </div>
+                        </div>
+                        <button onclick="deleteAppointment('${app._id}')" class="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl transition-colors shrink-0" title="${translations[currentLang].action_delete}">
+                            <i class="far fa-trash-alt text-sm"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-3 bg-gray-50/50 rounded-2xl text-xs space-y-1.5">
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-400">Clinic:</span>
+                            <span class="font-semibold text-gray-700 truncate max-w-[170px]">${clinicName}</span>
+                        </div>
+                        <div class="flex justify-between gap-2">
+                            <span class="text-gray-400">Service:</span>
+                            <span class="font-semibold text-gray-600 truncate max-w-[170px]">${serviceName}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Date:</span>
+                            <span class="font-bold text-gray-800">${formattedDate}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Time:</span>
+                            <span class="font-bold text-medical-600 font-mono">${displayTime}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-2 border-t border-gray-100 flex items-center justify-between">
+                        ${syncBadgeHtmlMobile}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
 };
 
 window.syncSingleAppointment = async function(id) {
