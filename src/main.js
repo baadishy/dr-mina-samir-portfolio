@@ -1,7 +1,10 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-
-// Translation Data
+// Global administrative and authentication variables
+let app = null;
+let auth = null;
+let provider = null;
+let signInWithPopup = null;
+let signOut = null;
+let GoogleAuthProvider = null;
 const translations = {
     en: {
         nav_home: "Home",
@@ -9,7 +12,7 @@ const translations = {
         nav_expertise: "Expertise",
         nav_testimonials: "Testimonials",
         nav_book: "Book Appointment",
-        hero_badge: "Pediatric Care Specialist",
+        hero_badge: "Pediatric Care Consultant",
         hero_title_1: "Caring for Your",
         hero_title_2: "Little Ones",
         hero_title_3: "with Expertise",
@@ -68,7 +71,7 @@ const translations = {
         form_child_name: "Patient Name (Full Name)",
         form_birth_date: "Birth Date",
         form_clinic: "Choose Clinic",
-        form_doctor: "Choose Specialist",
+        form_doctor: "Choose Consultant",
         service_selection: "Choose Service",
         form_name_placeholder: "Enter full name",
         form_email: "Email",
@@ -186,7 +189,16 @@ const translations = {
         sync_success: "Appointment synchronized successfully!",
         sync_all_success: "All appointments synchronized successfully!",
         delete_success: "Appointment deleted successfully!",
-        reauth_needed: "Google authentication session has expired! Please click on Google sign-in to refresh."
+        reauth_needed: "Google authentication session has expired! Please click on Google sign-in to refresh.",
+        chatbot_title: "Clinic AI Assistant",
+        chatbot_welcome: "Hello! I am Dr. Mina's clinical assistant. How can I help you today?",
+        chatbot_placeholder: "Type your question here...",
+        chatbot_suggest_hours: "Working hours & consultation days",
+        chatbot_suggest_location: "Clinic locations & addresses",
+        chatbot_suggest_booking: "How can I book an appointment?",
+        chatbot_suggest_vaccine: "Available vaccinations info",
+        chatbot_error: "Sorry, I am facing connectivity issues. Please try again or call 01006763805.",
+        chatbot_typing: "Typing..."
     },
     ar: {
         nav_home: "الرئيسية",
@@ -194,7 +206,7 @@ const translations = {
         nav_expertise: "خبراتنا",
         nav_testimonials: "قالوا عنا",
         nav_book: "حجز موعد",
-        hero_badge: "أخصائي رعاية الأطفال",
+        hero_badge: "استشاري رعاية الأطفال",
         hero_title_1: "نهتم بـ",
         hero_title_2: "أطفالكم",
         hero_title_3: "بكل خبرة واحترافية",
@@ -371,23 +383,38 @@ const translations = {
         sync_success: "تمت مزامنة الموعد بنجاح بالتقويم الخاص بك!",
         sync_all_success: "تمت مزامنة جميع الحجوزات بنجاح بالتقويم الخاص بك!",
         delete_success: "تم حذف الموعد المحدد بنجاح!",
-        reauth_needed: "انتهت صلاحية جلسة تقويم Google للطبيب! يرجى النقر على زر جوجل لإعادة تنشيط الاتصال."
+        reauth_needed: "انتهت صلاحية جلسة تقويم Google للطبيب! يرجى النقر على زر جوجل لإعادة تنشيط الاتصال.",
+        chatbot_title: "مساعد العيادة الذكي",
+        chatbot_welcome: "مرحباً! أنا المساعد الذكي لعيادة الدكتور مينا. كيف يمكنني مساعدتك اليوم؟",
+        chatbot_placeholder: "اكتب سؤالك هنا...",
+        chatbot_suggest_hours: "مواعيد وأيام العمل بالعيادات",
+        chatbot_suggest_location: "مواقع وعناوين العيادات",
+        chatbot_suggest_booking: "كيف يمكنني حجز موعد؟",
+        chatbot_suggest_vaccine: "معلومات عن تطعيمات الأطفال",
+        chatbot_error: "عذراً، أواجه مشكلة في الاتصال حالياً. يرجى المحاولة لاحقاً أو الاتصال بـ 01006763805.",
+        chatbot_typing: "يكتب الآن..."
     }
 };
 
-let app = null;
-let auth = null;
-let provider = null;
 let cachedAccessToken = null;
 let gcalUser = null;
 let isGCalEnabled = false;
 
 async function initFirebase() {
+    if (auth && provider) return;
     try {
+        const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
+        const firebaseAuthModule = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js');
+        
         const response = await fetch('/firebase-applet-config.json');
         const firebaseConfig = await response.json();
         app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
+        auth = firebaseAuthModule.getAuth(app);
+        
+        GoogleAuthProvider = firebaseAuthModule.GoogleAuthProvider;
+        signInWithPopup = firebaseAuthModule.signInWithPopup;
+        signOut = firebaseAuthModule.signOut;
+        
         provider = new GoogleAuthProvider();
         provider.addScope('https://www.googleapis.com/auth/calendar');
         provider.addScope('https://www.googleapis.com/auth/calendar.events');
@@ -629,6 +656,15 @@ function updateLanguage() {
 window.toggleLanguage = () => {
     currentLang = currentLang === 'en' ? 'ar' : 'en';
     updateLanguage();
+    setTimeout(() => {
+        window.openChatbox();
+    }, 150);
+};
+
+window.openChatbox = () => {
+    if (!isChatboxOpen) {
+        window.toggleChatbox();
+    }
 };
 
 window.toggleMobileMenu = () => {
@@ -639,6 +675,243 @@ window.toggleMobileMenu = () => {
 window.scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
+
+// Chatbot state
+let isChatboxOpen = false;
+let chatHistory = []; // Past messages for AI memory
+
+window.toggleChatbox = (e) => {
+    if (e) e.preventDefault();
+    const container = document.getElementById('chatbox-container');
+    const badge = document.getElementById('chatbot-notification');
+    const triggerIcon = document.getElementById('chatbot-trigger-icon');
+
+    if (!container) return;
+
+    if (isChatboxOpen) {
+        // Hide
+        container.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            container.classList.add('hidden');
+        }, 300);
+        if (triggerIcon) {
+            triggerIcon.className = 'fas fa-comments text-2xl group-hover:rotate-12 transition-transform';
+        }
+    } else {
+        // Show
+        container.classList.remove('hidden');
+        setTimeout(() => {
+            container.classList.remove('scale-95', 'opacity-0');
+        }, 10);
+        if (badge) {
+            badge.classList.add('hidden'); // Clear red notification once clicked
+        }
+        if (triggerIcon) {
+            triggerIcon.className = 'fas fa-chevron-down text-xl transition-all';
+        }
+        
+        // Scroll messages to bottom
+        const messagesContainer = document.getElementById('chat-messages-container');
+        if (messagesContainer) {
+            setTimeout(() => {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 50);
+        }
+    }
+    isChatboxOpen = !isChatboxOpen;
+};
+
+window.sendSuggestionPrompt = (key) => {
+    if (translations[currentLang] && translations[currentLang][key]) {
+        const text = translations[currentLang][key];
+        submitChatQuery(text);
+    }
+};
+
+window.handleChatSubmit = (e) => {
+    if (e) e.preventDefault();
+    const input = document.getElementById('chatbot-text-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    submitChatQuery(text);
+};
+
+async function submitChatQuery(messageText) {
+    const messagesContainer = document.getElementById('chat-messages-container');
+    if (!messagesContainer) return;
+
+    // 1. Render User Message
+    const userMsg = document.createElement('div');
+    userMsg.className = 'flex items-start gap-2 max-w-[85%] self-end ml-auto rtl:mr-auto rtl:ml-0 flex-row-reverse';
+    userMsg.innerHTML = `
+        <div class="w-7 h-7 rounded-full bg-healing-50 text-healing-600 border border-healing-100 flex items-center justify-center shrink-0">
+            <i class="fas fa-user text-xs"></i>
+        </div>
+        <div class="bg-gradient-to-r from-medical-50 to-healing-50 p-3 rounded-2xl rounded-tr-none shadow-sm text-gray-800 border border-medical-100 leading-relaxed break-words">
+            ${escapeHtml(messageText)}
+        </div>
+    `;
+    messagesContainer.appendChild(userMsg);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // 2. Add to Local Memory History
+    chatHistory.push({ role: 'user', text: messageText });
+    if (chatHistory.length > 10) chatHistory.shift(); // keep last 10 turns
+
+    // 3. Render Typing/Loading Indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.id = 'chatbot-typing-indicator';
+    typingIndicator.className = 'flex items-start gap-2 max-w-[85%] animate-pulse';
+    
+    const typingLabel = (translations[currentLang] && translations[currentLang].chatbot_typing) || "Typing...";
+    typingIndicator.innerHTML = `
+        <div class="w-7 h-7 rounded-full bg-medical-50 text-medical-600 border border-medical-100 flex items-center justify-center shrink-0">
+            <i class="fas fa-robot text-xs"></i>
+        </div>
+        <div class="bg-white p-3 rounded-2xl rounded-tl-none rtl:rounded-tr-none rtl:rounded-tl-2xl shadow-sm text-gray-400 border border-gray-100 italic flex items-center gap-1.5 leading-relaxed">
+            <i class="fas fa-circle-notch animate-spin text-xs text-medical-500"></i> ${typingLabel}
+        </div>
+    `;
+    messagesContainer.appendChild(typingIndicator);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // Disable input and btn during loading
+    const inputField = document.getElementById('chatbot-text-input');
+    const submitBtn = document.querySelector('#chatbot-input-form button[type="submit"]');
+    if (inputField) inputField.disabled = true;
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: messageText,
+                history: chatHistory.slice(0, -1) // send preceding history
+            })
+        });
+
+        const typingNode = document.getElementById('chatbot-typing-indicator');
+        if (typingNode) typingNode.remove();
+
+        if (!response.ok) {
+            throw new Error('API server status fail');
+        }
+
+        const data = await response.json();
+        const responseText = data.text || "No response received";
+
+        // Convert double break / markdown bullet points elegantly to HTML
+        const htmlText = formatMarkdownToHtml(responseText);
+
+        // 4. Render AI response
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'flex items-start gap-2 max-w-[85%]';
+        aiMsg.innerHTML = `
+            <div class="w-7 h-7 rounded-full bg-medical-50 text-medical-600 border border-medical-100 flex items-center justify-center shrink-0">
+                <i class="fas fa-robot text-xs"></i>
+            </div>
+            <div class="bg-white p-3 rounded-2xl rounded-tl-none rtl:rounded-tr-none rtl:rounded-tl-2xl shadow-sm text-gray-800 border border-gray-100 leading-relaxed markdown-body break-words">
+                ${htmlText}
+            </div>
+        `;
+        messagesContainer.appendChild(aiMsg);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+        // Add model answer to local visual history
+        chatHistory.push({ role: 'model', text: responseText });
+        if (chatHistory.length > 10) chatHistory.shift();
+
+    } catch (err) {
+        console.error('Chat error:', err);
+        const typingNode = document.getElementById('chatbot-typing-indicator');
+        if (typingNode) typingNode.remove();
+
+        const errorLabel = (translations[currentLang] && translations[currentLang].chatbot_error) || "Connection error.";
+        const errMsg = document.createElement('div');
+        errMsg.className = 'flex items-start gap-2 max-w-[85%]';
+        errMsg.innerHTML = `
+            <div class="w-7 h-7 rounded-full bg-red-50 text-red-600 border border-red-100 flex items-center justify-center shrink-0">
+                <i class="fas fa-triangle-exclamation text-xs"></i>
+            </div>
+            <div class="bg-red-50 text-red-700 p-3 rounded-2xl rounded-tl-none shadow-sm border border-red-100 leading-relaxed text-xs animate-shake">
+                ${errorLabel}
+            </div>
+        `;
+        messagesContainer.appendChild(errMsg);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } finally {
+        if (inputField) {
+            inputField.disabled = false;
+            inputField.focus();
+        }
+        if (submitBtn) submitBtn.disabled = false;
+    }
+}
+
+// Utility helper to escape HTML tags to prevent injections from model or inputs
+function escapeHtml(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Quick helper to translate markdown details returned by Gemini into neat HTML
+function formatMarkdownToHtml(str) {
+    if (!str) return '';
+    let html = str;
+    
+    // Escape HTML first safely except we preserve newlines and common Markdown symbols
+    html = escapeHtml(html);
+    
+    // Bold: **text** -> <strong>text</strong>
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Bullet points: * item or - item -> <li>item</li>
+    const lines = html.split('\n');
+    let inList = false;
+    const processedLines = lines.map(line => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+            const content = trimmed.substring(2);
+            if (!inList) {
+                inList = true;
+                const rtlClass = currentLang === 'ar' ? 'pr-5 pl-0 rtl text-right' : 'pl-5';
+                return `<ul class="list-disc ${rtlClass} space-y-1 my-1"><li>${content}</li>`;
+            }
+            return `<li>${content}</li>`;
+        } else {
+            if (inList) {
+                inList = false;
+                return '</ul>' + line;
+            }
+            return line;
+        }
+    });
+    
+    if (inList) {
+        processedLines.push('</ul>');
+    }
+    
+    html = processedLines.join('<br>');
+    
+    // Deduplicate double br elements next to ul / li
+    html = html.replace(/(<br>)+<\/ul>/g, '</ul>');
+    html = html.replace(/<ul>(<br>)+/g, '<ul>');
+    html = html.replace(/<\/ul>(<br>)+/g, '</ul>');
+    html = html.replace(/<li>(<br>)+/g, '<li>');
+    html = html.replace(/<br><li>/g, '<li>');
+    
+    return html;
+}
 
 // Modal functions
 const modal = document.getElementById('testimonialModal');
@@ -1118,45 +1391,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// Admin Dashboard Control Logic
+// Admin Dashboard Control Redirect Logic
 // ==========================================
-let adminAppointments = [];
-let adminAuthDetails = null;
-
 window.openAdminDashboard = function(e) {
     if (e) e.preventDefault();
-    const modal = document.getElementById('adminDashboardModal');
-    if (!modal) return;
-    
-    // Smooth Transition Reveal
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        modal.classList.add('opacity-100');
-        const modalChild = modal.querySelector('.relative');
-        if (modalChild) {
-            modalChild.classList.remove('scale-95');
-            modalChild.classList.add('scale-100');
-        }
-    }, 10);
-    
-    // Auto-load details
-    loadAdminDashboard();
-};
-
-window.closeAdminDashboard = function() {
-    const modal = document.getElementById('adminDashboardModal');
-    if (!modal) return;
-    
-    modal.classList.remove('opacity-100');
-    const modalChild = modal.querySelector('.relative');
-    if (modalChild) {
-        modalChild.classList.add('scale-95');
-        modalChild.classList.remove('scale-100');
-    }
-    
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
+    window.location.href = '/admin';
 };
 
 async function loadAdminDashboard() {

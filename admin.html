@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physician Portal | Dr. Mina Samir</title>
+
+    <!-- Style and Font Assets -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'serif': ['Playfair Display', 'Cairo', 'serif'],
+                        'sans': ['Inter', 'Cairo', 'sans-serif'],
+                        'arabic': ['Cairo', 'sans-serif'],
+                    },
+                    colors: {
+                        medical: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        healing: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #0ea5e9 0%, #22c55e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+        
+        /* Smooth Page Cross-Dissolve transitions */
+        body {
+            opacity: 0;
+            transition: opacity 300ms ease-in-out !important;
+        }
+        body.page-ready {
+            opacity: 1 !important;
+        }
+        body.page-leaving {
+            opacity: 0 !important;
+        }
+    </style>
+    <script>
+        // Trigger smooth page fade-in
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('page-ready');
+        });
+        window.addEventListener('load', () => {
+            document.body.classList.add('page-ready');
+        });
+        
+        // Intercept local anchors to trigger beautiful fade-out transition
+        document.addEventListener('click', (e) => {
+            const anchor = e.target.closest('a');
+            if (!anchor) return;
+            
+            const href = anchor.getAttribute('href');
+            if (!href) return;
+            
+            if (href.startsWith('#') || 
+                href.startsWith('mailto:') || 
+                href.startsWith('tel:') || 
+                href.startsWith('javascript:') || 
+                anchor.getAttribute('target') === '_blank' ||
+                anchor.hasAttribute('download') ||
+                e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+                return;
+            }
+            
+            const isLocal = href.startsWith('/') || href.startsWith(window.location.origin) || !href.includes(':');
+            if (isLocal) {
+                e.preventDefault();
+                document.body.classList.add('page-leaving');
+                document.body.classList.remove('page-ready');
+                setTimeout(() => {
+                    window.location.href = href;
+                }, 280);
+            }
+        });
+
+        // Safe Back-Forward Cache восстанавливает анимацию
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                document.body.classList.remove('page-leaving');
+                document.body.classList.add('page-ready');
+            }
+        });
+    </script>
+</head>
+<body class="font-sans text-gray-800 bg-gray-50 min-h-screen overflow-x-hidden">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="window.location.href='/'">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-medical-500 to-healing-500 flex items-center justify-center text-white font-bold text-sm">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <span class="font-serif text-lg font-bold text-gray-800" id="nav-brand-text">Dr. Mina Samir</span>
+                </div>
+                
+                <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                    <a href="/" class="text-xs font-semibold text-gray-600 hover:text-medical-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-gray-100 flex items-center gap-1.5">
+                        <i class="fas fa-home"></i>
+                        <span id="nav-back-home">Back to Site</span>
+                    </a>
+                    
+                    <button onclick="toggleAdminLanguage()" class="flex items-center space-x-1 px-2.5 py-1 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-xs font-medium">
+                        <i class="fas fa-language text-medical-500"></i>
+                        <span id="lang-toggle-text">العربية</span>
+                    </button>
+
+                    <button id="nav-logout-btn" onclick="handlePortalLogOut()" class="hidden text-xs font-semibold text-red-600 hover:text-red-700 transition-colors px-3 py-1.5 rounded-lg hover:bg-red-50 flex items-center gap-1.5">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span id="nav-logout-label">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container with spacing for Nav -->
+    <main class="pt-24 pb-16 px-4 max-w-7xl mx-auto">
+        
+        <!-- ==================== 1. Secure Login Form ==================== -->
+        <div id="portal-login-section" class="max-w-md mx-auto my-12 animate-fade-in">
+            <div class="glass-effect rounded-3xl p-8 shadow-xl border border-gray-100 text-center space-y-6">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-medical-500 to-healing-500 flex items-center justify-center text-white text-2xl mx-auto shadow-md">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                
+                <div>
+                    <h2 class="text-2xl font-serif font-bold text-gray-900" id="login-title">Physician Access Portal</h2>
+                    <p class="text-xs text-gray-500 mt-2" id="login-desc">Please supply authorization credentials to enter the administrative clinic metrics and schedule sync module.</p>
+                </div>
+
+                <form id="portalLoginForm" class="space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1" id="label-user">Username</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                                <i class="fas fa-user"></i>
+                            </span>
+                            <input type="text" id="adminUsername" class="w-full pl-10 pr-4 py-3 rounded-xl text-sm border border-gray-200 focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none transition-all" required placeholder="User">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1" id="label-pass">Password</label>
+                        <div class="relative">
+                            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+                                <i class="fas fa-key"></i>
+                            </span>
+                            <input type="password" id="adminPassword" class="w-full pl-10 pr-4 py-3 rounded-xl text-sm border border-gray-200 focus:ring-2 focus:ring-medical-500 focus:border-medical-500 outline-none transition-all" required placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3 bg-gradient-to-r from-medical-600 to-healing-600 hover:from-medical-700 hover:to-healing-700 text-white font-bold text-sm rounded-xl transition-all shadow-md flex items-center justify-center space-x-2">
+                        <span id="login-btn-text">Authenticate</span>
+                        <i class="fas fa-sign-in-alt"></i>
+                    </button>
+                </form>
+                
+                <div id="login-error-toast" class="hidden text-xs text-red-600 font-bold bg-red-50 p-3 rounded-xl border border-red-100">
+                    <!-- Error message goes here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 2. Admin Dashboard Modality ==================== -->
+        <div id="portal-dashboard-section" class="hidden space-y-6">
+            
+            <!-- Dashboard Header block -->
+            <div class="p-6 bg-gradient-to-r from-medical-600 to-healing-600 text-white flex flex-col md:flex-row justify-between items-start md:items-center rounded-3xl shadow-lg gap-4">
+                <div class="flex items-center space-x-3.5 rtl:space-x-reverse">
+                    <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl shadow-inner">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-2xl font-serif font-bold tracking-tight" id="dashboard-title">Dr. Mina Samir - Clinic Management</h1>
+                        <p class="text-xs text-white/80 mt-1" id="dashboard-subtitle">Secure dashboard for managing clinic appointments and Google Calendar synchronization.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                    <span class="px-3.5 py-1 bg-white/20 border border-white/30 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                        <span id="status-secure">Session Secured</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Loading phase indicator -->
+            <div id="admin-loading" class="flex flex-col items-center justify-center py-24">
+                <div class="w-12 h-12 border-4 border-medical-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-sm text-gray-500 mt-4 animate-pulse" id="loading-text">Loading secure scheduler info...</p>
+            </div>
+
+            <!-- Dashboard Modules (Hidden if database isn't retrieved yet) -->
+            <div id="admin-main-container" class="hidden space-y-6">
+                
+                <!-- Ribbon Cards: GCal Authentication and Quick Stats -->
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Google Account Connect card -->
+                    <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4 rtl:space-x-reverse min-h-[110px]">
+                        <div id="gcal-avatar-container" class="shrink-0">
+                            <img id="admin-avatar" class="w-12 h-12 rounded-full border-2 border-medical-200" src="https://www.gravatar.com/avatar/?d=mp" alt="Google Profile">
+                        </div>
+                        <div class="overflow-hidden w-full space-y-1">
+                            <span class="text-[10px] text-gray-400 block font-bold uppercase tracking-wider" id="gcal-badge-auth">Google Calendar Link</span>
+                            
+                            <!-- Trigger GCal login if not authenticated -->
+                            <div id="gcal-auth-unconnected" class="space-y-2">
+                                <p class="text-[11px] text-gray-500 leading-tight" id="gcal-desc-unconnected">Authorize GCal connection to post clinical slots directly to Google Agenda.</p>
+                                <button onclick="handleAdminSignIn()" class="px-3 py-1.5 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg shadow-sm text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                                    <svg class="w-4 h-4" viewBox="0 0 48 48">
+                                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                                    </svg>
+                                    <span id="btn-login-gcal">Link Google Account</span>
+                                </button>
+                            </div>
+
+                            <div id="gcal-auth-connected" class="hidden">
+                                <span id="admin-name" class="font-bold text-gray-800 text-xs leading-none block truncate">Clinical Doctor</span>
+                                <span id="admin-email" class="text-[11px] text-gray-500 truncate block">doctor@gmail.com</span>
+                                <button id="adminDisconnectBtn" onclick="handleAdminSignOut()" class="text-[10px] text-red-500 hover:text-red-700 font-semibold mt-1 block" id="gcal-disconnect-link">Disconnect Google Agenda</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Destination Selection Card -->
+                    <div class="p-5 bg-white rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4 rtl:space-x-reverse min-h-[110px]">
+                        <div class="w-12 h-12 rounded-full bg-medical-50 text-medical-600 flex items-center justify-center text-xl shrink-0 shadow-inner">
+                            <i class="far fa-calendar-check"></i>
+                        </div>
+                        <div class="overflow-hidden w-full space-y-1">
+                            <span class="text-[10px] text-gray-400 block font-bold uppercase tracking-wider" id="destination-gcal-badge">Calendar Sync Hub</span>
+                            <select id="adminCalendarSelect" onchange="updateCalendarDestination(this.value)" class="mt-1 block w-full px-2.5 py-1.5 text-xs font-bold text-gray-700 bg-gray-55 border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-medical-500">
+                                <option value="primary" id="dest-primary">Primary Calendar (Main)</option>
+                                <option value="clinic" id="dest-custom">Clinic Calendar (Dedicated)</option>
+                            </select>
+                            <span class="text-[11px] text-green-600 font-semibold flex items-center mt-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5 rtl:ml-1.5 rtl:mr-0 inline-block animate-pulse"></span>
+                                <span id="calendar-status-text">Synchronizing Real-Time</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Sync and Sync Metrics Card -->
+                    <div class="p-5 bg-gradient-to-br from-medical-50/50 to-healing-50/50 rounded-3xl border border-medical-100/50 shadow-sm flex items-center justify-between gap-2 min-h-[110px]">
+                        <div class="overflow-hidden">
+                            <span class="text-[10px] text-gray-400 block font-bold uppercase tracking-wider" id="bulk-actions-badge">Registry Actions</span>
+                            <h5 class="font-bold text-gray-800 mt-1 text-xs"><span id="admin-count-unsynced">0</span> <span id="pending-syncs-suffix">unsynced appointments</span></h5>
+                            <span id="bulk-action-detail-text" class="text-[10px] text-gray-500 block leading-tight mt-1">Updates clinical dates instantly.</span>
+                        </div>
+                        <button id="adminSyncAllBtn" onclick="syncAllPendingAppointments()" class="px-4 py-3 bg-gradient-to-r from-medical-600 to-healing-600 text-white rounded-xl font-bold text-xs hover:shadow-md transition-all flex items-center space-x-1.5 shrink-0 hover:scale-[1.02] active:scale-95">
+                            <i id="adminSyncIcon" class="fas fa-sync-alt"></i>
+                            <span id="bulk-sync-btn-label">Sync All</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Clinic Log Filters Header -->
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-white p-5 rounded-3xl border border-gray-100 shadow-sm gap-4">
+                    <div class="flex items-center space-x-2.5 rtl:space-x-reverse">
+                        <h4 class="text-base font-bold text-gray-900" id="bookings-log-title">Clinic Booking Log</h4>
+                        <span class="px-3 py-0.5 text-xs bg-medical-50 text-medical-600 font-bold rounded-full border border-medical-100" id="admin-total-badge">0 appointments</span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        <!-- Search input box -->
+                        <div class="relative min-w-[200px]">
+                            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                            <input type="text" id="adminSearchInput" oninput="renderAdminAppointments()" class="w-full pl-9 pr-4 py-2 rounded-xl text-xs border border-gray-200 focus:ring-2 focus:ring-medical-500 outline-none" placeholder="Search customer...">
+                        </div>
+
+                        <!-- Clinic selection filter -->
+                        <select id="adminClinicFilter" onchange="renderAdminAppointments()" class="px-3 py-2 text-xs border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-medical-500 outline-none">
+                            <option value="" id="filter-all-clinics">All Clinics</option>
+                            <option value="Minya Clinic (عيادة المنيا)" id="filter-minya-clinic">Minya Clinic</option>
+                            <option value="Bani Ahmed Clinic (عيادة بني أحمد)" id="filter-bani-ahmed-clinic">Bani Ahmed Clinic</option>
+                        </select>
+
+                        <!-- Unscheduled-only toggle -->
+                        <label class="flex items-center space-x-2 rtl:space-x-reverse cursor-pointer text-xs font-semibold text-gray-600">
+                            <input type="checkbox" id="adminUnsyncedOnly" onchange="renderAdminAppointments()" class="rounded border-gray-300 text-medical-600 focus:ring-medical-500">
+                            <span id="filter-unsynced-only">Unsynced only</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Patient Booking Table and empty state details -->
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col min-h-[350px]">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50/50 border-b border-gray-100 font-bold">
+                                <tr>
+                                    <th scope="col" class="px-6 py-4" id="th-patient-label">Patient</th>
+                                    <th scope="col" class="px-6 py-4" id="th-clinic-label">Clinic & Service</th>
+                                    <th scope="col" class="px-6 py-4" id="th-datetime-label">Date & Time</th>
+                                    <th scope="col" class="px-6 py-4" id="th-calendar-status-label">Calendar Status</th>
+                                    <th scope="col" class="px-6 py-4 text-center" id="th-actions-label">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminBookingsTableBody" class="divide-y divide-gray-100">
+                                <!-- Dynamic bookings will load here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Dynamic Empty state -->
+                    <div id="admin-empty-state" class="hidden flex-1 flex-col items-center justify-center py-20 text-center space-y-3">
+                        <div class="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mx-auto shadow-inner">
+                            <i class="far fa-folder-open text-2xl"></i>
+                        </div>
+                        <h5 class="font-bold text-gray-800 text-sm" id="empty-title">No bookings matched filters</h5>
+                        <p class="text-xs text-gray-400 max-w-xs mx-auto" id="empty-desc">Refine search criteria or clinic selections to locate details.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Global Toast Alert element -->
+    <div id="toastNotification" class="fixed bottom-8 right-8 left-auto z-[120] transform translate-y-24 opacity-0 transition-all duration-500 ease-out pointer-events-none max-w-sm w-full bg-white/95 backdrop-blur-md text-gray-800 px-5 py-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.08)] flex items-center space-x-3.5 rtl:space-x-reverse border border-gray-100 border-l-4">
+        <div id="toastIcon" class="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"></div>
+        <div class="flex-grow min-w-0">
+            <div id="toastText" class="text-xs md:text-sm font-semibold text-gray-800 leading-snug"></div>
+        </div>
+        <button id="toastCloseBtn" class="text-gray-400 hover:text-gray-600 focus:outline-none transition-colors ml-auto mr-1 rtl:mr-auto rtl:ml-1 leading-none p-1">
+            <i class="fas fa-times text-xs"></i>
+        </button>
+    </div>
+
+    <!-- Script assets inclusion -->
+    <script type="module" src="/src/admin.js?v=1.2.0"></script>
+</body>
+</html>

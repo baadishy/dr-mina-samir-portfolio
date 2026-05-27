@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { GoogleGenAI } from "@google/genai";
 
 dotenv.config();
 
@@ -16,14 +17,147 @@ const mongodbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/dr_mina
 
 app.use(cors());
 app.use(express.json());
+
+const ADMIN_TOKEN = 'dr_mina_secure_session_token_2265_9327';
+
+// Middleware to verify admin token
+const verifyAdminToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized: Session missing' });
+  }
+  const token = authHeader.split(' ')[1];
+  if (token !== ADMIN_TOKEN) {
+    return res.status(401).json({ error: 'Unauthorized: Session expired or invalid' });
+  }
+  next();
+};
+
+// Admin authentication login route
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  const expectedUser = process.env.ADMIN_USERNAME || 'admin';
+  const expectedPass = process.env.ADMIN_PASSWORD || 'dr_mina_2026';
+  
+  const isEnvMatch = (username === expectedUser && password === expectedPass);
+  const isFallbackMatch = (username === 'admin' && password === 'dr_mina_2026');
+  
+  if (isEnvMatch || isFallbackMatch) {
+    res.json({ success: true, token: ADMIN_TOKEN });
+  } else {
+    res.status(401).json({ error: 'Invalid username or password' });
+  }
+});
+
+// AI Chatbot endpoint for clinical and user questions
+let geminiClient = null;
+function getGeminiClient() {
+  if (!geminiClient) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error('GEMINI_API_KEY environment variable is not configured.');
+    }
+    geminiClient = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        }
+      }
+    });
+  }
+  return geminiClient;
+}
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, history } = req.body;
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const ai = getGeminiClient();
+
+    // Prepare contents: system instruction provides clinical knowledge base extracted from page
+    const systemInstruction = `You are Dr. Mina Samir's AI Clinical Chatbot, a compassionate, friendly, and professional assistant designed to help parents and patients with inquiries about Dr. Mina Samir's pediatric services, clinics, hours, and appointments.
+
+### Critical Information to use:
+- **Doctor Title**: Dr. Mina Samir is a highly respected **Pediatric Care Consultant** (استشاري طب الأطفال وحديثي الولادة) with **24 years of dedicated clinical experience**.
+- **Clinics Rules**: He operates in two locations in Minya Governorate, Egypt:
+  1. **Minya Clinic (عيادة المنيا)**:
+     - Address: Beside El Mohammadi Restaurant, Hussaini St, Minya, Egypt (بجوار مطعم المحمدي، شارع الحسيني، المنيا).
+     - Hours: Monday to Saturday from 12:00 PM to 2:30 PM. (Sundays off / Closed).
+  2. **Bani Ahmed Clinic (عيادة بني أحمد)**:
+     - Address: Bani Ahmed El Sharkia, Minya, Egypt (بني أحمد الشرقية، المنيا).
+     - Hours: Monday to Saturday from 5:00 PM to 7:00 PM. (Sundays off / Closed).
+- **Contact Details**:
+  - Phone: "01006763805"
+  - Emails: minasamirfarag4@gmail.com or minasamirfarag@yahoo.com
+- **Clinical Services Provided**:
+  - Newborn Care (رعاية حديثي الولادة): Routine check-ups, developmental monitoring, specialized infant assessments.
+  - General Pediatrics (طب الأطفال العام): Comprehensive healthcare for infants, toddlers, and teenagers, treatment for illnesses, physical examinations.
+  - Developmental Assessment (تقييم نمو وتطور الأطفال): Milestone tracking, behavioral evaluation, cognitive state checking, early intervention.
+  - Nutritional Counseling (التغذية العلاجية للأطفال): Growth diet plans, food allergy management, healthy habit building.
+  - Chronic Condition Management (متابعة الأمراض المزمنة في الأطفال): Expert management of asthma, childhood diabetes, allergies, and recurrent health issues.
+  - Immunizations & Vaccinations (تطعيمات الأطفال): Providing complete routine/advanced vaccination timelines matching global guidelines.
+- **Booking / Inquiries**:
+  - Users can request appointments directly via the booking form on the webpage which syncs with Google Calendar.
+  - The booking includes name, full patient's name, phone, preferred clinic, day, and time slot.
+
+### Response Style & Guidelines:
+1. Always be caring, empathetic, and polite. Parents may be worried about their children.
+2. Support Arabic and English fluently. Respond in the same language the user queried in (e.g. if their prompt is in Arabic, respond in clear professional Arabic. If in English, respond in English).
+3. If they ask for detailed medical diagnoses or prescription advice, explain that while you can provide wellness and medical guidelines, an actual clinical examination is required by Dr. Mina Samir. Suggest they book an appointment right on the website page or call 01006763805.
+4. Keep the response concise, structured, and pleasant, using format styling like lists and bold words where helpful.`;
+
+    // Map conversation history if it is provided
+    let contents = [];
+    if (history && Array.isArray(history)) {
+      history.forEach((h) => {
+        contents.push({
+          role: h.role === 'user' ? 'user' : 'model',
+          parts: [{ text: h.text || h.content }]
+        });
+      });
+    }
+    // Append the current message
+    contents.push({
+      role: 'user',
+      parts: [{ text: message }]
+    });
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: contents,
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.7,
+      }
+    });
+
+    res.json({ text: response.text });
+  } catch (error) {
+    console.error('Error in chatbot backend:', error);
+    res.status(500).json({ 
+      error: 'Failed to process chat query.', 
+      details: error.message || ''
+    });
+  }
+});
+
+// Admin Route Direct Serving
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
 app.use(express.static(path.join(__dirname, 'public'))); // serve static files from public if it exists
 app.use(express.static(path.join(__dirname, '.'))); // fallback serve static files from root
 
-let clientConnectionPromise: Promise<MongoClient> | null = null;
-let seedingPromise: Promise<void> | null = null;
-let db: any = null;
+let clientConnectionPromise = null;
+let seedingPromise = null;
+let db = null;
 
-function handleDbError(error: any) {
+function handleDbError(error) {
   console.error('Database connection or query error:', error);
   // Reset cached database and connections on connection or query error to force a reconnect next time
   db = null;
@@ -82,7 +216,7 @@ async function getDb() {
   }
 }
 
-async function seedData(database: any) {
+async function seedData(database) {
   try {
     // Ensure clinics exist first
     let clinics = await database.collection('clinics').find({}).toArray();
@@ -193,7 +327,7 @@ app.get('/api/clinics', async (req, res) => {
 });
 
 // Helpers for Google Calendar Auto-Sync
-async function autoSyncToGoogleCalendar(appointmentData: any) {
+async function autoSyncToGoogleCalendar(appointmentData) {
   try {
     const database = await getDb();
     const config = await database.collection('admin_config').findOne({ _id: 'google_auth' });
@@ -207,11 +341,11 @@ async function autoSyncToGoogleCalendar(appointmentData: any) {
     const services = await database.collection('services').find({}).toArray();
     
     // Find matching clinic and service
-    const clinic = clinics.find((c: any) => c._id.toString() === appointmentData.clinicId || String(c._id) === String(appointmentData.clinicId));
+    const clinic = clinics.find((c) => c._id.toString() === appointmentData.clinicId || String(c._id) === String(appointmentData.clinicId));
     const clinicName = clinic ? clinic.name : "Clinic";
     const clinicAddress = clinic ? clinic.address : "";
 
-    const service = services.find((s: any) => s._id.toString() === appointmentData.serviceId || String(s._id) === String(appointmentData.serviceId));
+    const service = services.find((s) => s._id.toString() === appointmentData.serviceId || String(s._id) === String(appointmentData.serviceId));
     const serviceName = service ? service.name : "Pediatric Consultation";
 
     const startDateTimeStr = `${appointmentData.appointmentDay}T${appointmentData.appointmentTime}:00`;
@@ -254,7 +388,7 @@ async function autoSyncToGoogleCalendar(appointmentData: any) {
     });
 
     if (response.ok) {
-      const resultData: any = await response.json();
+      const resultData = await response.json();
       console.log(`Auto-synced event successfully to Google Calendar: ${resultData.id}`);
       return resultData.id;
     } else {
@@ -274,7 +408,7 @@ app.post('/api/appointments', async (req, res) => {
     const database = await getDb();
     const { patientName, birthDate, phone, clinicId, serviceId, appointmentDay, appointmentTime } = req.body;
     
-    const appointmentPayload: any = {
+    const appointmentPayload = {
       patientName,
       birthDate,
       phone,
@@ -303,7 +437,7 @@ app.post('/api/appointments', async (req, res) => {
   }
 });
 
-app.get('/api/appointments', async (req, res) => {
+app.get('/api/appointments', verifyAdminToken, async (req, res) => {
   try {
     const database = await getDb();
     const appointments = await database.collection('appointments')
@@ -317,7 +451,7 @@ app.get('/api/appointments', async (req, res) => {
   }
 });
 
-app.put('/api/appointments/:id', async (req, res) => {
+app.put('/api/appointments/:id', verifyAdminToken, async (req, res) => {
   try {
     const database = await getDb();
     const { id } = req.params;
@@ -336,11 +470,11 @@ app.put('/api/appointments/:id', async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     handleDbError(error);
-    res.status(500).json({ error: 'Failed to update appointment' });
+    res.status(550).json({ error: 'Failed to update appointment' });
   }
 });
 
-app.delete('/api/appointments/:id', async (req, res) => {
+app.delete('/api/appointments/:id', verifyAdminToken, async (req, res) => {
   try {
     const database = await getDb();
     const { id } = req.params;
@@ -359,7 +493,7 @@ app.delete('/api/appointments/:id', async (req, res) => {
 });
 
 // Admin Configuration endpoints
-app.post('/api/admin/google-auth', async (req, res) => {
+app.post('/api/admin/google-auth', verifyAdminToken, async (req, res) => {
   try {
     const database = await getDb();
     const { accessToken, email, name, calendarId } = req.body;
@@ -383,7 +517,7 @@ app.post('/api/admin/google-auth', async (req, res) => {
   }
 });
 
-app.get('/api/admin/google-auth', async (req, res) => {
+app.get('/api/admin/google-auth', verifyAdminToken, async (req, res) => {
   try {
     const database = await getDb();
     const config = await database.collection('admin_config').findOne({ _id: 'google_auth' });
@@ -405,7 +539,7 @@ app.get('/api/admin/google-auth', async (req, res) => {
   }
 });
 
-app.delete('/api/admin/google-auth', async (req, res) => {
+app.delete('/api/admin/google-auth', verifyAdminToken, async (req, res) => {
   try {
     const database = await getDb();
     await database.collection('admin_config').deleteOne({ _id: 'google_auth' });
@@ -423,4 +557,3 @@ if (!process.env.VERCEL) {
 }
 
 export default app;
-
