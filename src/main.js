@@ -656,9 +656,6 @@ function updateLanguage() {
 window.toggleLanguage = () => {
     currentLang = currentLang === 'en' ? 'ar' : 'en';
     updateLanguage();
-    setTimeout(() => {
-        window.openChatbox();
-    }, 150);
 };
 
 window.openChatbox = () => {
